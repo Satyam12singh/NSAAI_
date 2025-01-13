@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "723892879690",
+    "project_id": "nsaai-a61f4",
+    "storage_bucket": "nsaai-a61f4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723892879690:android:67c11ec05a8fe7e88701b3",
+        "android_client_info": {
+          "package_name": "com.example.nsaai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzgApE9lg60_C5S2rMxnlvkXvk9L_X7gU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
