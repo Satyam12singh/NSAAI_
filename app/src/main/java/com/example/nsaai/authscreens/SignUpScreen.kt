@@ -1,4 +1,4 @@
-package com.example.nsaai.Screens
+package com.example.nsaai.authscreens
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -40,7 +40,6 @@ import com.example.nsaai.Navigation.Screens
 import com.example.nsaai.R
 import com.example.nsaai.ViewModels.AuthState
 import com.example.nsaai.ViewModels.AuthViewModel
-import com.example.nsaai.ViewModels.SignUpViewModel
 import com.example.nsaai.signinOptions
 import com.google.firebase.auth.FirebaseAuth
 

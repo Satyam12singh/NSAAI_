@@ -45,12 +45,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.nsaai.Screens.LoginScreen
-import com.example.nsaai.Screens.SignInScreen
-import com.example.nsaai.Screens.SignUpScreen
+import com.example.nsaai.authscreens.LoginScreen
+import com.example.nsaai.authscreens.SignInScreen
+import com.example.nsaai.authscreens.SignUpScreen
 import com.example.nsaai.ViewModels.AuthViewModel
-import com.example.nsaai.ViewModels.SignViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nsaai.Screens.HomeScreen
 
 

@@ -42,6 +42,13 @@ android {
 
 dependencies {
 
+    // Network calls
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+// JSON to Kotlin object mapping
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+// Image loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
     implementation ("com.facebook.android:facebook-login:15.1.0")
     implementation ("com.google.firebase:firebase-auth-ktx")
 
