@@ -40,6 +40,7 @@
 //
 package com.example.nsaai.Navigation
 
+import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -50,6 +51,9 @@ import com.example.nsaai.authscreens.SignInScreen
 import com.example.nsaai.authscreens.SignUpScreen
 import com.example.nsaai.ViewModels.AuthViewModel
 import com.example.nsaai.Screens.HomeScreen
+import com.example.nsaai.Screens.MovieScreen
+
+import com.example.nsaai.ViewModels.MovieViewModel
 
 
 @Composable
@@ -75,6 +79,9 @@ fun Navigation(
         }
         composable(Screens.Home.route) {
             HomeScreen(viewModel = viewModel, navController = navController)
+        }
+        composable(Screens.Movie.route) {
+            MovieScreen(viewModel=MovieViewModel(),navController=navController)
         }
     }
 }

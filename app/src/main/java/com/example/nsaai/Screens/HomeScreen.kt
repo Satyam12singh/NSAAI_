@@ -1,6 +1,7 @@
 package com.example.nsaai.Screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.nsaai.Navigation.Screens
 import com.example.nsaai.ViewModels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
@@ -74,7 +76,9 @@ fun HomeScreen(modifier: Modifier = Modifier,
 
             Column(modifier= Modifier
                 .fillMaxSize()
-                .padding(paddingValues)) {
+                .padding(paddingValues),
+                verticalArrangement = Arrangement.Center
+                ) {
                 Button(
                     onClick = {
                         viewModel.logout()
@@ -84,6 +88,14 @@ fun HomeScreen(modifier: Modifier = Modifier,
                     }
                 ) {
                     Text("Logout")
+                }
+
+                Button(
+                    onClick = {
+                        navController.navigate(Screens.Movie.route)
+                    }
+                ) {
+                    Text("Navigate to Movie Section")
                 }
             }
 

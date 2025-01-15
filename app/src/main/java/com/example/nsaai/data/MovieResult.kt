@@ -1,6 +1,6 @@
 package com.example.nsaai.data
 
-data class Result(
+data class MovieResult(
     val adult: Boolean,
     val backdrop_path: String,
     val genre_ids: List<Int>,
