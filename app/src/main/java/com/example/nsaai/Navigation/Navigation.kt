@@ -52,6 +52,7 @@ import com.example.nsaai.authscreens.SignUpScreen
 import com.example.nsaai.ViewModels.AuthViewModel
 import com.example.nsaai.Screens.HomeScreen
 import com.example.nsaai.Screens.MovieScreen
+import com.example.nsaai.ViewModels.GenreViewModel
 
 import com.example.nsaai.ViewModels.MovieViewModel
 
@@ -81,7 +82,7 @@ fun Navigation(
             HomeScreen(viewModel = viewModel, navController = navController)
         }
         composable(Screens.Movie.route) {
-            MovieScreen(viewModel=MovieViewModel(),navController=navController)
+            MovieScreen(viewModel=MovieViewModel(),viewmodel= GenreViewModel(),navController=navController)
         }
     }
 }
