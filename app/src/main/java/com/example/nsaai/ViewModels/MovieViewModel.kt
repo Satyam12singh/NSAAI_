@@ -1,14 +1,12 @@
 package com.example.nsaai.ViewModels
 
-import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nsaai.BuildConfig
-import com.example.nsaai.R
-import com.example.nsaai.data.MovieData
-import com.example.nsaai.data.MovieResult
+import com.example.nsaai.datafromapi.MovieData
+import com.example.nsaai.datafromapi.MovieResult
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

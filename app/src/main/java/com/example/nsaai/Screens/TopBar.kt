@@ -2,7 +2,9 @@ package com.example.nsaai.Screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,42 +39,48 @@ fun TopBar(onOpenDrawer: () -> Unit,
     searchText: String,
     onSearchTextChanged: (String) -> Unit
 ) {
-    TopAppBar(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(100.dp)),
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary
-        ),
-        title = {
-            TextField(
-                value = searchText,
-                onValueChange = onSearchTextChanged,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(text = "Search ", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp)
-                },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent, // No background
-                    focusedTextColor = Color.Black, // Text color when focused
-                    unfocusedTextColor = Color.Transparent, // Text color
-                    cursorColor = Color.Black, // Cursor color
-                    focusedIndicatorColor = Color.Transparent, // No underline
-                    unfocusedIndicatorColor = Color.Transparent // No underline
+    Column (modifier=Modifier.fillMaxWidth()
+        .background(MaterialTheme.colorScheme.primary.copy(0.5f))){
+        TopAppBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(100.dp)),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
+            title = {
+                TextField(
+                    value = searchText,
+                    onValueChange = onSearchTextChanged,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            text = "Search ",
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent, // No background
+                        focusedTextColor = Color.Black, // Text color when focused
+                        unfocusedTextColor = Color.Transparent, // Text color
+                        cursorColor = Color.Black, // Cursor color
+                        focusedIndicatorColor = Color.Transparent, // No underline
+                        unfocusedIndicatorColor = Color.Transparent // No underline
+                    )
                 )
-            )
-        },
-        navigationIcon = {
-            Row { IconButton(onClick = { onOpenDrawer()}) {
-                Icon(
-                    imageVector = Icons.Rounded.Menu,
-                    contentDescription = "Menu Icon",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+            },
+            navigationIcon = {
+                Row {
+                    IconButton(onClick = { onOpenDrawer() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Menu,
+                            contentDescription = "Menu Icon",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
 //                IconButton(onClick = { /* Handle navigation icon click */ }) {
 //                    Icon(
 //                        imageVector = Icons.Rounded.Search,
@@ -80,11 +88,12 @@ fun TopBar(onOpenDrawer: () -> Unit,
 //                        tint = MaterialTheme.colorScheme.onPrimary
 //                    )
 //                }
+                }
+
+            },
+            actions = {
+
             }
-
-        },
-        actions = {
-
-        }
-    )
+        )
+    }
 }

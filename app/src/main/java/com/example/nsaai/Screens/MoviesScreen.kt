@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.nsaai.ViewModels.GenreViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
-import com.example.nsaai.data.MovieResult  // Ensure this import is correct
+import com.example.nsaai.datafromapi.MovieResult  // Ensure this import is correct
 
 @Composable
 fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier,navController: NavController,

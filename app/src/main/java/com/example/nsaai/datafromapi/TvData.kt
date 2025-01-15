@@ -1,4 +1,4 @@
-package com.example.nsaai.data
+package com.example.nsaai.datafromapi
 
 data class TvData(
     val page: Int,

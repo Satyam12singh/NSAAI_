@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nsaai.BuildConfig
-import com.example.nsaai.data.Genre
-import com.example.nsaai.data.GenreData
+import com.example.nsaai.datafromapi.Genre
+import com.example.nsaai.datafromapi.GenreData
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

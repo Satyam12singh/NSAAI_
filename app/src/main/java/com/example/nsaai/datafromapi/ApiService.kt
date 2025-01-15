@@ -1,4 +1,4 @@
-package com.example.nsaai.data
+package com.example.nsaai.datafromapi
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
