@@ -8,7 +8,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.content.MediaType.Companion.Image
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,9 +30,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +58,7 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
     val state = viewModel.moviestate.value
     val genreState = viewmodel.genrestate.value
 
+
     Scaffold(
         topBar = {
             TopBarMovie(navController = navController)
@@ -68,45 +76,93 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
             } else {
                 LazyColumn {  // Fixed the nesting issue here
                     items(genreState.list) { genre ->
-                        Log.d("genreid", "Genre: ${genre.id}")
-                        Text(
-                            text = genre.name,
-                            modifier = Modifier.padding(10.dp),
-                            fontSize = 24.sp,
-                            fontFamily = Font(R.font.font).toFontFamily()
-                        )
+                        val filteredMovie = state.list.filter{ movie: MovieResult ->
+                            genre.id in movie.genre_ids
 
-                        // Constrain LazyRow properly with a fixed height
-                        LazyRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp)
-                        ) {
+                        }
+                        if (filteredMovie.isNotEmpty()){
+                            Log.d("genreid", "Genre: ${genre.id}")
+                            Text(
+                                text = genre.name,
+                                modifier = Modifier.padding(10.dp),
+                                fontSize = 24.sp,
+                                fontFamily = Font(R.font.font).toFontFamily()
+                            )
 
-                            items(state.list) { movie: MovieResult ->
+                            // Constrain LazyRow properly with a fixed height
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(150.dp),
+                                contentPadding = PaddingValues(10.dp)
+                            ) {
+
+                                items(filteredMovie) { movie: MovieResult ->
 
 
-                                Log.d("genreid", "Movie: ${movie.genre_ids}")
-                                if (movie.genre_ids.contains(genre.id)) {
-                                    Box(
-                                        modifier = Modifier
-                                            .height(100.dp)
-                                            .width(200.dp)
-                                            .padding(start = 10.dp, end = 10.dp)
-                                            .clip(RoundedCornerShape(20.dp))
-                                            .background(MaterialTheme.colorScheme.onPrimary)
+                                    Log.d("genreid", "Movie: ${movie.genre_ids}")
+//                                    if (movie.genre_ids.contains(genre.id)) {
+                                        Box(
+                                            modifier = Modifier
+                                                .height(150.dp)
+                                                .width(200.dp)
 
-                                    ) {
-                                        Image(
-                                            painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"),
-                                            contentDescription = null,
+                                                ,
 
-                                        )
-                                    }
+
+
+                                        ) {
+                                            Column {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .height(100.dp)
+                                                        .width(200.dp)
+                                                        .padding(start = 10.dp, end = 10.dp)
+                                                        .clip(RoundedCornerShape(20.dp))
+                                                        .background(MaterialTheme.colorScheme.onPrimary)
+                                                    ,
+                                                    contentAlignment = Alignment.Center
+
+                                                ){
+                                                    Image(
+                                                        painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"),
+                                                        contentDescription = null,
+
+                                                    )
+                                                    Text("(${movie.original_language})",
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontFamily = Font(R.font.poppins).toFontFamily(),
+                                                        color= Color.White,
+                                                        modifier=Modifier.align(Alignment.BottomCenter).padding(bottom = 3.dp),
+                                                    )
+                                                }
+                                                Row (modifier=Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+                                                    verticalAlignment = Alignment.Bottom,
+                                                    horizontalArrangement = Arrangement.Center
+                                                ){
+                                                    Log.d("MovieTitle", "Title: ${movie.original_title}")
+                                                    Text("${movie.original_title}",
+                                                        fontSize = 16.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontFamily = Font(R.font.poppins).toFontFamily(),
+                                                        color = MaterialTheme.colorScheme.onPrimary,
+//                                                        modifier=Modifier.padding(bottom = 2.dp)
+                                                    )
+
+                                                }
+
+                                            }
+
+
+
+                                        }
+//                                    }
+
                                 }
-
                             }
                         }
+
                     }
                 }
             }
