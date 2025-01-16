@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,13 +33,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.toFontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -47,6 +56,8 @@ import com.example.nsaai.ViewModels.GenreViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
 import com.example.nsaai.datafromapi.MovieResult  // Ensure this import is correct
 import java.lang.reflect.Method
+import kotlin.math.abs
+import kotlin.math.min
 import androidx.compose.foundation.layout.Box as Box
 
 
@@ -57,7 +68,8 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
 ) {
     val state = viewModel.moviestate.value
     val genreState = viewmodel.genrestate.value
-
+    val scrollState = rememberScrollState()
+    var fontifoverflow=14.sp
 
     Scaffold(
         topBar = {
@@ -89,16 +101,22 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
                                 fontFamily = Font(R.font.font).toFontFamily()
                             )
 
+                            val lazyListState = rememberLazyListState()
+
+                            Spacer(modifier=Modifier.height(10.dp))
                             // Constrain LazyRow properly with a fixed height
                             LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(150.dp),
-                                contentPadding = PaddingValues(10.dp)
+                                    .height(170.dp),
+                                contentPadding = PaddingValues(20.dp),
+                                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                state = lazyListState
                             ) {
 
-                                items(filteredMovie) { movie: MovieResult ->
+                                itemsIndexed(filteredMovie) { index,movie: MovieResult ->
 
+                                    val scale= calculateScale(index, lazyListState)
 
                                     Log.d("genreid", "Movie: ${movie.genre_ids}")
 //                                    if (movie.genre_ids.contains(genre.id)) {
@@ -106,6 +124,10 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
                                             modifier = Modifier
                                                 .height(150.dp)
                                                 .width(200.dp)
+                                                .graphicsLayer {
+                                                    scaleX=scale
+                                                    scaleY= scale
+                                                }
 
                                                 ,
 
@@ -116,7 +138,7 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
                                                 Box(
                                                     modifier = Modifier
                                                         .height(100.dp)
-                                                        .width(200.dp)
+                                                        .width(250.dp)
                                                         .padding(start = 10.dp, end = 10.dp)
                                                         .clip(RoundedCornerShape(20.dp))
                                                         .background(MaterialTheme.colorScheme.onPrimary)
@@ -141,12 +163,21 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
                                                     verticalAlignment = Alignment.Bottom,
                                                     horizontalArrangement = Arrangement.Center
                                                 ){
+                                                    var fontSize by remember { mutableStateOf(16.sp) }
+
                                                     Log.d("MovieTitle", "Title: ${movie.original_title}")
                                                     Text("${movie.original_title}",
-                                                        fontSize = 16.sp,
+                                                        fontSize = fontSize,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        onTextLayout ={textLayoutResult ->
+                                                            if (textLayoutResult.hasVisualOverflow) {
+                                                                fontSize = 10.sp // Reduce font size when there's overflow
+                                                            }
+                                                        },
                                                         fontWeight = FontWeight.Bold,
                                                         fontFamily = Font(R.font.poppins).toFontFamily(),
-                                                        color = MaterialTheme.colorScheme.onPrimary,
+                                                        color = MaterialTheme.colorScheme.onPrimary.copy(1.5f),
 //                                                        modifier=Modifier.padding(bottom = 2.dp)
                                                     )
 
@@ -167,5 +198,28 @@ fun MovieScreen(viewModel: MovieViewModel, modifier: Modifier = Modifier, navCon
                 }
             }
         }
+    }
+}
+
+
+//This function is too much important
+@Composable
+fun calculateScale(index: Int, listState: androidx.compose.foundation.lazy.LazyListState): Float {
+    // Get the visible items and the center of the viewport
+    val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
+    val viewportCenter = (listState.layoutInfo.viewportEndOffset + listState.layoutInfo.viewportStartOffset) / 2
+
+    // Find the item info for the given index
+    val itemInfo = visibleItemsInfo.find { it.index == index }
+
+    return if (itemInfo != null) {
+        // Calculate the distance from the center of the viewport
+        val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+        val distanceFromCenter = abs(itemCenter - viewportCenter)
+
+        // Calculate the scale based on the distance
+        1.0f + (0.5f * (1.0f - min(1f, distanceFromCenter / 500f)))
+    } else {
+        1.0f // Default scale if the item is not visible
     }
 }
