@@ -28,13 +28,58 @@ class MovieViewModel : ViewModel() {
         fetchMovies()
     }
 
+//    fun fetchMovies() {
+//        viewModelScope.launch {
+//            try {
+//                val response = fetchTrendingMovies()
+//                val movieData = Gson().fromJson(response, MovieData::class.java)
+//                _movieState.value = _movieState.value.copy(
+//                    list = movieData.results,
+//                    loading = false,
+//                    error = null
+//                )
+//            } catch (e: Exception) {
+//                _movieState.value = _movieState.value.copy(
+//                    loading = false,
+//                    error = e.message
+//                )
+//            }
+//        }
+//    }
+
+    // Using OkHttpClient for the API call with Bearer Token
+//    private suspend fun fetchTrendingMovies(): String {
+//        val client = OkHttpClient()
+//
+//
+//        val request = Request.Builder()
+////            .url("https://api.themoviedb.org/3/trending/movie/day?language=en-US")
+//            .url("https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=true&language=en-US&page=1&sort_by=popularity.desc")
+//            .get()
+//            .addHeader("accept", "application/json")
+//            .addHeader("Authorization", "Bearer $apiKey")  // Using the apiKey variable correctly
+//            .build()
+//
+//        return withContext(Dispatchers.IO) {
+//            val response: Response = client.newCall(request).execute()
+//            if (!response.isSuccessful) {
+//                throw Exception("HTTP Error: ${response.code}") // Better error handling
+//            }
+//            response.body?.string() ?: throw Exception("Empty Response")
+//        }
+//    }
+
     fun fetchMovies() {
         viewModelScope.launch {
             try {
-                val response = fetchTrendingMovies()
-                val movieData = Gson().fromJson(response, MovieData::class.java)
+                val allMovies = mutableListOf<MovieResult>()
+                for (page in 1..10) { // Fetch all 10 pages
+                    val response = fetchTrendingMovies(page)
+                    val movieData = Gson().fromJson(response, MovieData::class.java)
+                    allMovies.addAll(movieData.results)
+                }
                 _movieState.value = _movieState.value.copy(
-                    list = movieData.results,
+                    list = allMovies,
                     loading = false,
                     error = null
                 )
@@ -47,14 +92,13 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    // Using OkHttpClient for the API call with Bearer Token
-    private suspend fun fetchTrendingMovies(): String {
+    private suspend fun fetchTrendingMovies(page: Int): String {
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("https://api.themoviedb.org/3/trending/movie/day?language=en-US")
+            .url("https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=true&language=en-US&page=$page&sort_by=popularity.desc")
             .get()
             .addHeader("accept", "application/json")
-            .addHeader("Authorization", "Bearer $apiKey")  // Using the apiKey variable correctly
+            .addHeader("Authorization", "Bearer $apiKey") // Using the apiKey variable correctly
             .build()
 
         return withContext(Dispatchers.IO) {
@@ -65,6 +109,7 @@ class MovieViewModel : ViewModel() {
             response.body?.string() ?: throw Exception("Empty Response")
         }
     }
+
 
     data class MovieState(
         val loading: Boolean = true,
