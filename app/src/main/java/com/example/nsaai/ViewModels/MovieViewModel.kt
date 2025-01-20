@@ -25,6 +25,9 @@ class MovieViewModel : ViewModel() {
     private val _movieState = mutableStateOf(MovieState())
     val moviestate: State<MovieState> = _movieState
 
+    private val _externalId = mutableStateOf("")
+    var externalId= _externalId
+
     // Automatically fetch movies when the ViewModel initializes
     init {
         fetchMovies()
@@ -136,6 +139,7 @@ class MovieViewModel : ViewModel() {
                 val response = findexternalids(movieid)
                 val externalidResponse = Gson().fromJson(response, ExternalIds::class.java)
 
+                _externalId.value= externalidResponse.imdb_id
 
                 Log.d("External_ID", "IMDB ID: ${externalidResponse.imdb_id}")
 
