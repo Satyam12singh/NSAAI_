@@ -13,7 +13,6 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -32,13 +31,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,13 +64,18 @@ import com.example.nsaai.R
 import com.example.nsaai.ViewModels.GenreViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
 import com.example.nsaai.datafromapi.MovieResult  // Ensure this import is correct
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.lang.reflect.Method
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.time.Duration.Companion.seconds
 import androidx.compose.foundation.layout.Box as Box
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MovieScreen(
     viewModel: MovieViewModel, modifier: Modifier = Modifier, navController: NavController,
@@ -78,150 +87,186 @@ fun MovieScreen(
     var fontifoverflow = 14.sp
     val context= LocalContext.current
 
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefreshing)
+
+
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopBarMovie(navController = navController)
         }
     ) { paddingValues ->
 
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary.copy(0.3f)),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        SwipeRefresh(
+            state = swipeRefreshState,
+
+            onRefresh = {
+                coroutineScope.launch {
+                    isRefreshing=true
+                    viewmodel.fetchGenre()
+                    viewModel.fetchMovies()
+                    delay(3.seconds)
+                    isRefreshing=false
+
+                }
+
+            }
         ) {
-            if (genreState.loading) {
+//            val minScrollThreshold = 200 // You can adjust this threshold as per your requirement
+//
+//            val isBelowThreshold = remember { derivedStateOf {
+//                scrollState.firstVisibleItemScrollOffset < minScrollThreshold
+//            }}
+
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primary.copy(0.3f)),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                if (genreState.loading) {
 //                Text("Loading genre...")
-                CircularProgressIndicator(color = Color.White,
-                    strokeWidth = 4.dp,
-                    trackColor = Color.Blue)
-            } else {
-                LazyColumn {  // Fixed the nesting issue here
-                    items(genreState.list) { genre ->
-                        val filteredMovie = state.list.filter { movie: MovieResult ->
-                            genre.id in movie.genre_ids
+                    CircularProgressIndicator(color = Color.White,
+                        strokeWidth = 4.dp,
+                        trackColor = Color.Blue)
+                } else {
 
-                        }
-                        if (filteredMovie.isNotEmpty()) {
-                            Log.d("genreid", "Genre: ${genre.id}")
-                            Text(
-                                text = genre.name,
-                                modifier = Modifier.padding(10.dp),
-                                fontSize = 24.sp,
-                                fontFamily = Font(R.font.font).toFontFamily()
-                            )
 
-                            val lazyListState = rememberLazyListState()
+                    LazyColumn {  // Fixed the nesting issue here
+                        items(genreState.list) { genre ->
+                            val filteredMovie = state.list.filter { movie: MovieResult ->
+                                genre.id in movie.genre_ids
 
-                            Spacer(modifier = Modifier.height(10.dp))
-                            // Constrain LazyRow properly with a fixed height
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(170.dp),
-                                contentPadding = PaddingValues(20.dp),
-                                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                                state = lazyListState
-                            ) {
+                            }
+                            if (filteredMovie.isNotEmpty()) {
+                                Log.d("genreid", "Genre: ${genre.id}")
+                                Text(
+                                    text = genre.name,
+                                    modifier = Modifier.padding(10.dp),
+                                    fontSize = 24.sp,
+                                    fontFamily = Font(R.font.font).toFontFamily()
+                                )
 
-                                itemsIndexed(filteredMovie) { index, movie: MovieResult ->
+                                val lazyListState = rememberLazyListState()
 
-                                    val scale = calculateScale(index, lazyListState)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                // Constrain LazyRow properly with a fixed height
+                                LazyRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(170.dp),
+                                    contentPadding = PaddingValues(20.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                    state = lazyListState
+                                ) {
 
-                                    Log.d("genreid", "Movie: ${movie.genre_ids}")
+                                    itemsIndexed(filteredMovie) { index, movie: MovieResult ->
+
+                                        val scale = calculateScale(index, lazyListState)
+
+                                        Log.d("genreid", "Movie: ${movie.genre_ids}")
 //                                    if (movie.genre_ids.contains(genre.id)) {
-                                    Box(
-                                        modifier = Modifier
-                                            .height(150.dp)
-                                            .width(200.dp)
-                                            .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                            }
-                                            .clickable {
-                                                Toast.makeText(context,"${movie.original_title} is clicked",Toast.LENGTH_SHORT).show()
-                                            }
-                                        ,
+                                        Box(
+                                            modifier = Modifier
+                                                .height(150.dp)
+                                                .width(200.dp)
+                                                .graphicsLayer {
+                                                    scaleX = scale
+                                                    scaleY = scale
+                                                }
+                                                .clickable {
+                                                    Toast.makeText(context,"${movie.original_title} is clicked",Toast.LENGTH_SHORT).show()
+                                                    viewModel.fetchExternalIds(movie.id)
 
+//                                                    navController.navigate("externalids/${movie.id}")
+                                                }
+                                            ,
 
-                                        ) {
-                                        Column {
-                                            Box(
-                                                modifier = Modifier
-                                                    .height(100.dp)
-                                                    .width(250.dp)
-                                                    .padding(start = 10.dp, end = 10.dp)
-                                                    .clip(RoundedCornerShape(20.dp))
-                                                    .background(MaterialTheme.colorScheme.onPrimary),
-                                                contentAlignment = Alignment.Center
 
                                             ) {
-                                                Image(
-                                                    painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"),
-                                                    contentDescription = null,
-
-                                                    )
-                                                Text(
-                                                    "(${movie.original_language})",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontFamily = Font(R.font.poppins).toFontFamily(),
-                                                    color = Color.White,
+                                            Column {
+                                                Box(
                                                     modifier = Modifier
-                                                        .align(Alignment.BottomCenter)
-                                                        .padding(bottom = 3.dp),
-                                                )
-                                            }
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 5.dp),
-                                                verticalAlignment = Alignment.Bottom,
-                                                horizontalArrangement = Arrangement.Center
-                                            ) {
-                                                var fontSize by remember { mutableStateOf(16.sp) }
+                                                        .height(100.dp)
+                                                        .width(250.dp)
+                                                        .padding(start = 10.dp, end = 10.dp)
+                                                        .clip(RoundedCornerShape(20.dp))
+                                                        .background(MaterialTheme.colorScheme.onPrimary),
+                                                    contentAlignment = Alignment.Center
 
-                                                Log.d(
-                                                    "MovieTitle",
-                                                    "Title: ${movie.original_title}"
-                                                )
-                                                Text(
-                                                    "${movie.original_title}",
-                                                    fontSize = fontSize,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    onTextLayout = { textLayoutResult ->
-                                                        if (textLayoutResult.hasVisualOverflow) {
-                                                            fontSize =
-                                                                10.sp // Reduce font size when there's overflow
-                                                        }
-                                                    },
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontFamily = Font(R.font.poppins).toFontFamily(),
-                                                    color = MaterialTheme.colorScheme.onPrimary.copy(
-                                                        1.5f
-                                                    ),
+                                                ) {
+                                                    Image(
+                                                        painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"),
+                                                        contentDescription = null,
+
+                                                        )
+                                                    Text(
+                                                        "(${movie.original_language})",
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontFamily = Font(R.font.poppins).toFontFamily(),
+                                                        color = Color.White,
+                                                        modifier = Modifier
+                                                            .align(Alignment.BottomCenter)
+                                                            .padding(bottom = 3.dp),
+                                                    )
+                                                }
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 5.dp),
+                                                    verticalAlignment = Alignment.Bottom,
+                                                    horizontalArrangement = Arrangement.Center
+                                                ) {
+                                                    var fontSize by remember { mutableStateOf(16.sp) }
+
+                                                    Log.d(
+                                                        "MovieTitle",
+                                                        "Title: ${movie.original_title}"
+                                                    )
+                                                    Text(
+                                                        "${movie.original_title}",
+                                                        fontSize = fontSize,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        onTextLayout = { textLayoutResult ->
+                                                            if (textLayoutResult.hasVisualOverflow) {
+                                                                fontSize =
+                                                                    10.sp // Reduce font size when there's overflow
+                                                            }
+                                                        },
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontFamily = Font(R.font.poppins).toFontFamily(),
+                                                        color = MaterialTheme.colorScheme.onPrimary.copy(
+                                                            1.5f
+                                                        ),
 //                                                        modifier=Modifier.padding(bottom = 2.dp)
-                                                )
+                                                    )
+
+                                                }
 
                                             }
+
 
                                         }
-
-
-                                    }
 //                                    }
 
+                                    }
                                 }
                             }
-                        }
 
+                        }
                     }
+
                 }
             }
         }
+
     }
 }
 

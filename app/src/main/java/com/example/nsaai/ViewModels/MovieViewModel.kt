@@ -1,10 +1,12 @@
 package com.example.nsaai.ViewModels
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nsaai.BuildConfig
+import com.example.nsaai.datafromapi.ExternalIds
 import com.example.nsaai.datafromapi.MovieData
 import com.example.nsaai.datafromapi.MovieResult
 import com.google.gson.Gson
@@ -109,6 +111,40 @@ class MovieViewModel : ViewModel() {
             response.body?.string() ?: throw Exception("Empty Response")
         }
     }
+    private suspend fun findexternalids(movieid: Int): String {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://api.themoviedb.org/3/movie/$movieid/external_ids")  // Without api_key in URL
+            .get()
+            .addHeader("Authorization", "Bearer $apiKey")  // Pass API key in the Authorization header
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            val response: Response = client.newCall(request).execute()
+            if (!response.isSuccessful) {
+                throw Exception("HTTP Error: ${response.code}")  // Better error handling
+            }
+            response.body?.string() ?: throw Exception("Empty Response")
+        }
+    }
+
+
+
+    fun fetchExternalIds(movieid: Int) {
+        viewModelScope.launch {
+            try {
+                val response = findexternalids(movieid)
+                val externalidResponse = Gson().fromJson(response, ExternalIds::class.java)
+
+
+                Log.d("External_ID", "IMDB ID: ${externalidResponse.imdb_id}")
+
+            } catch (e: Exception) {
+                Log.d("External_ID", "Error: ${e.message}")
+            }
+        }
+    }
+
 
 
     data class MovieState(

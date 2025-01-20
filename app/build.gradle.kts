@@ -94,6 +94,7 @@ dependencies {
 //    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
 //    implementation("com.google.android.libraries.identity.googleid:googleid:1.5.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.28.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
