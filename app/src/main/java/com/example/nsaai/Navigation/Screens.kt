@@ -8,4 +8,5 @@ sealed class Screens(val route: String) {
 
     object Home: Screens("home")
     object Movie: Screens("movie")
+    object AboutMovie: Screens("aboutmovie/{id}")
 }

@@ -181,7 +181,10 @@ fun MovieScreen(
                                                 }
                                                 .clickable {
                                                     Toast.makeText(context,"${movie.original_title} is clicked",Toast.LENGTH_SHORT).show()
-                                                    viewModel.fetchExternalIds(movie.id)
+//                                                    viewModel.fetchExternalIds(movie.id)
+                                                    Log.d("this is sent to aboutmnovie","${movie.id}")
+                                                    navController.navigate("aboutmovie/${movie.id}")
+//                                                    navController.navigate("aboutmovie")
 
 //                                                    navController.navigate("externalids/${movie.id}")
                                                 }

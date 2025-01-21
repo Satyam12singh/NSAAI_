@@ -1,5 +1,6 @@
 package com.example.nsaai.Screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,8 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,21 +31,37 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
 
+
+
+
 @Composable
 fun AboutMovie(modifier: Modifier = Modifier,
                viewmodel: AboutMovieViewModel,
-               viewModel: MovieViewModel
+               viewModel: MovieViewModel,
+               id:Int
+
 ) {
-    var externalid by remember {
-        mutableStateOf("")
-    }
-    var poster_path by remember {
-        mutableStateOf("")
+    val externalid = viewModel.externalId.value
+    Log.d("aboutmnovie_exid1", "Fetching external ID for movie ID: $externalid")
+
+    var poster_path by remember { mutableStateOf("") }
+
+    LaunchedEffect(id) {
+        viewModel.fetchExternalIds(id)
+        Log.d("aboutmnovie_externalid", "Fetching external ID for movie ID: $externalid")
+
     }
 
-    externalid= viewModel.externalId.value
-    viewmodel.fetchaboutthemovie(externalid)
-    poster_path = viewmodel.fetchaboutthemovie(externalid).poster_path
+    LaunchedEffect(externalid) {
+        if (externalid.isNotEmpty()) {
+            viewmodel.fetchAboutTheMovie(externalid)
+            poster_path = viewmodel.posterPath.value
+            Log.d("aboutmnovie_posterpath", "Fetching poster path for movie ID: $poster_path")
+
+        }
+    }
+
+
 
 
     Column(modifier=  Modifier.fillMaxSize()
@@ -53,10 +74,12 @@ fun AboutMovie(modifier: Modifier = Modifier,
         Box(
             modifier= Modifier.fillMaxWidth()
                 .height(600.dp)
+                .background(MaterialTheme.colors.onBackground)
 
         ) {
 
-            Image(painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/original/${poster_path}"))
+//            Image(painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/original/oHPoF0Gzu8xwK4CtdXDaWdcuZxZ.jpg"), contentDescription = null)
+            Image(painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/original/${poster_path}"), contentDescription = null)
 
 
 
@@ -69,8 +92,15 @@ fun AboutMovie(modifier: Modifier = Modifier,
 }
 
 
-@Preview(showBackground = true)
-@Composable
-private fun ABoutMoviePreview() {
-    AboutMovie(modifier=Modifier.fillMaxSize(),viewmodel = AboutMovieViewModel(), viewModel = MovieViewModel())
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun ABoutMoviePreview() {
+//    val mockAboutMovieViewModel = AboutMovieViewModel().apply {
+//        posterPath.value = "/jbOSUAWMGzGL1L4EaUF8K6zYFo7.jpg" // Replace with a valid TMDB poster path for preview
+//    }
+//
+//    val mockMovieViewModel = MovieViewModel().apply {
+//        externalId.value = "tt13186482" // Mock external ID
+//    }
+//    AboutMovie(modifier=Modifier.fillMaxSize(),viewmodel = AboutMovieViewModel(), id=762509,viewModel = MovieViewModel())
+//}

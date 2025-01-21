@@ -26,53 +26,13 @@ class MovieViewModel : ViewModel() {
     val moviestate: State<MovieState> = _movieState
 
     private val _externalId = mutableStateOf("")
-    var externalId= _externalId
+    var externalId : State<String> = _externalId
 
     // Automatically fetch movies when the ViewModel initializes
     init {
         fetchMovies()
     }
 
-//    fun fetchMovies() {
-//        viewModelScope.launch {
-//            try {
-//                val response = fetchTrendingMovies()
-//                val movieData = Gson().fromJson(response, MovieData::class.java)
-//                _movieState.value = _movieState.value.copy(
-//                    list = movieData.results,
-//                    loading = false,
-//                    error = null
-//                )
-//            } catch (e: Exception) {
-//                _movieState.value = _movieState.value.copy(
-//                    loading = false,
-//                    error = e.message
-//                )
-//            }
-//        }
-//    }
-
-    // Using OkHttpClient for the API call with Bearer Token
-//    private suspend fun fetchTrendingMovies(): String {
-//        val client = OkHttpClient()
-//
-//
-//        val request = Request.Builder()
-////            .url("https://api.themoviedb.org/3/trending/movie/day?language=en-US")
-//            .url("https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=true&language=en-US&page=1&sort_by=popularity.desc")
-//            .get()
-//            .addHeader("accept", "application/json")
-//            .addHeader("Authorization", "Bearer $apiKey")  // Using the apiKey variable correctly
-//            .build()
-//
-//        return withContext(Dispatchers.IO) {
-//            val response: Response = client.newCall(request).execute()
-//            if (!response.isSuccessful) {
-//                throw Exception("HTTP Error: ${response.code}") // Better error handling
-//            }
-//            response.body?.string() ?: throw Exception("Empty Response")
-//        }
-//    }
 
     fun fetchMovies() {
         viewModelScope.launch {
@@ -127,6 +87,7 @@ class MovieViewModel : ViewModel() {
             if (!response.isSuccessful) {
                 throw Exception("HTTP Error: ${response.code}")  // Better error handling
             }
+
             response.body?.string() ?: throw Exception("Empty Response")
         }
     }
@@ -142,6 +103,7 @@ class MovieViewModel : ViewModel() {
                 _externalId.value= externalidResponse.imdb_id
 
                 Log.d("External_ID", "IMDB ID: ${externalidResponse.imdb_id}")
+                Log.d("exfetchfor aboutmnovie","${externalidResponse.imdb_id}")
 
             } catch (e: Exception) {
                 Log.d("External_ID", "Error: ${e.message}")

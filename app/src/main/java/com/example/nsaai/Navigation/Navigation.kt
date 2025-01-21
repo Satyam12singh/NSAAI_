@@ -41,17 +41,22 @@
 package com.example.nsaai.Navigation
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.nsaai.Screens.AboutMovie
 import com.example.nsaai.authscreens.LoginScreen
 import com.example.nsaai.authscreens.SignInScreen
 import com.example.nsaai.authscreens.SignUpScreen
 import com.example.nsaai.ViewModels.AuthViewModel
 import com.example.nsaai.Screens.HomeScreen
 import com.example.nsaai.Screens.MovieScreen
+import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.GenreViewModel
 
 import com.example.nsaai.ViewModels.MovieViewModel
@@ -83,6 +88,16 @@ fun Navigation(
         }
         composable(Screens.Movie.route) {
             MovieScreen(viewModel=MovieViewModel(),viewmodel= GenreViewModel(),navController=navController)
+        }
+        composable(Screens.AboutMovie.route,
+            arguments= listOf(navArgument("id"){
+                type= NavType.IntType
+            })
+            ) {backStackENtry ->
+            val movieId = backStackENtry.arguments?.getInt("id") ?: 0
+            Log.d("is id sent to aboutmnovie?","$movieId")
+
+            AboutMovie(viewModel=MovieViewModel(),viewmodel= AboutMovieViewModel(),id= movieId)
         }
     }
 }

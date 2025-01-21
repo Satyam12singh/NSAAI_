@@ -32,9 +32,10 @@ class AboutMovieViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = fetchAboutMovie(id)
-                val movieResults = Gson().fromJson(response, ExternalIds::class.java)
-                _posterPath.value = MovieResultX.
-                _externalId.value = movieResults.movie_results.firstOrNull()?.id.toString()
+//                val movieResults = Gson().fromJson(response, ExternalIds::class.java)
+                val aboutmovie= Gson().fromJson(response,MovieResultX::class.java)
+                _posterPath.value= aboutmovie.poster_path
+
             } catch (e: Exception) {
                 Log.e("fetchAboutTheMovie", "Error: ${e.message}")
             }
