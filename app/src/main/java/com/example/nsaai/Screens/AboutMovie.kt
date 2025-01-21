@@ -1,13 +1,6 @@
 package com.example.nsaai.Screens
 
 import android.util.Log
-import androidx.appcompat.app.AppCompatDelegate.NightMode
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,14 +10,16 @@ import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.ui.util.lerp
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -34,30 +29,35 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.FloatingActionButton
+
 import androidx.compose.material.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Star
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.layout.ContentScale
-
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight.Companion.Black
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.example.nsaai.Navigation.Screens
+import com.example.nsaai.CastByApi.Cast
+import com.example.nsaai.R
+
 import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
-import kotlin.math.absoluteValue
+import kotlin.math.abs
+import kotlin.math.min
 
 
 @Composable
@@ -77,6 +77,21 @@ fun AboutMovie(modifier: Modifier = Modifier,
     viewmodel.fetchAboutTheMovie(externalid_fetched)
     val poster_path = viewmodel.posterPath.value
     val image_path = viewmodel.imageofmovie.value
+
+//    Details of Movie
+    viewmodel.fetchAllMovieDetails(id)
+    val title= viewmodel.title.value
+    val adult=viewmodel.adult.value
+    val original_language=viewmodel.original_language.value
+    val vote_average=viewmodel.vote_average.value
+    val overview=viewmodel.overview.value
+    val release_date=viewmodel.release_date.value
+
+//    About Cast
+    viewmodel.fetchCastDetails(id)
+    val cast=viewmodel.cast.value
+
+
     Log.d("AM poster path", "$poster_path")
 //    val scrollState = rememberScrollState()
 
@@ -150,13 +165,14 @@ fun AboutMovie(modifier: Modifier = Modifier,
                 }
 
                 1 -> {
-                    Column {
+
+                        AboutTheMovie(title = title, adult = adult, original_language = original_language, overview = overview, release_date = release_date, vote_average = vote_average, poster_path = poster_path,cast=cast)
 
                     }
 
                 }
             }
-        }
+
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -187,5 +203,303 @@ fun AboutMovie(modifier: Modifier = Modifier,
 
 }
 
+@Composable
+fun CircularRatingProgressBar(rating: Float) {
+    // Ensure the rating is clamped between 0 and 10
+    val normalizedRating = rating.coerceIn(0f, 10f)
+    val progress = normalizedRating / 10f // Convert to a value between 0 and 1
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(80.dp) // Set the size of the circular progress bar
+    ) {
+        // Circular progress indicator
+        CircularProgressIndicator(
+            progress = progress,
+            color = MaterialTheme.colorScheme.onBackground,
+            strokeWidth = 6.dp,
+            modifier = Modifier.fillMaxSize()
+        )
+        // Text showing the rating
+        Row(
+            modifier=Modifier.align(Alignment.Center),
+            horizontalArrangement = Arrangement.Center
+        ){
+
+            Text(
+                text = String.format("%.1f/10", rating),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 12.sp
+            )
+            Icon(Icons.Filled.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(18.dp))
+
+        }
+    }
+}
 
 
+@Composable
+fun AboutTheMovie(modifier: Modifier = Modifier,
+                   title:String,
+                   adult:Boolean,
+                   original_language:String,
+                   vote_average:Double,
+                   overview:String,
+                   release_date:String,
+                  poster_path:String?=null,
+                    cast:List<Cast>
+                  )
+{
+    Column(
+        modifier=Modifier.fillMaxSize()
+            .padding(horizontal = 10.dp)
+            .padding(top = 8.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+
+        Text("${title}",
+            modifier= Modifier.fillMaxWidth()
+                .padding(8.dp),
+            fontFamily = Font(R.font.font).toFontFamily(),
+            fontSize = 35.sp,
+            fontWeight = Bold,
+            maxLines = 2,
+            color = MaterialTheme.colorScheme.onBackground
+
+        )
+        Spacer(modifier=Modifier.height(20.dp))
+        Row(
+            modifier=Modifier.fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                horizontalAlignment = Alignment.Start,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Adult: ",
+                        modifier= Modifier
+                            .padding(start = 8.dp),
+                        fontFamily = Font(R.font.font).toFontFamily(),
+                        fontSize = 24.sp,
+                        fontWeight = Bold,
+                        maxLines = 2,
+                        color = MaterialTheme.colorScheme.onBackground
+
+                    )
+                    if(adult==true){
+                        Text("Yes",
+                            fontFamily = Font(R.font.font).toFontFamily(),
+                            fontSize = 24.sp,
+                            fontWeight = Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }else{
+                        Text("No",
+                            fontFamily = Font(R.font.font).toFontFamily(),
+                            fontSize = 24.sp,
+                            fontWeight = Bold,
+                            color = MaterialTheme.colorScheme.onBackground)
+
+                    }
+                }
+                Spacer(modifier=Modifier.height(8.dp))
+                Text("Release Date: $release_date",
+                    modifier=Modifier.padding(start = 8.dp),
+                    fontFamily = Font(R.font.font).toFontFamily(),
+                    fontWeight = Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                    )
+
+            }
+
+            CircularRatingProgressBar(rating = vote_average.toFloat())
+
+
+
+        }
+
+        Spacer(modifier=Modifier.height(100.dp))
+        val scrollState = rememberScrollState()
+        Column(modifier= Modifier.verticalScroll(scrollState)) {
+            Text(
+            "${overview}",
+            fontSize = 28.sp,
+            fontWeight = Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            fontFamily = Font(R.font.font).toFontFamily(),
+
+        )
+        }
+        Spacer(modifier=Modifier.height(80.dp))
+
+        LazyRow {
+            items(cast.size) { 
+                cast.forEach {item ->
+                    Card(
+                        modifier=Modifier
+                            .padding(8.dp)
+                            .height(200.dp)
+                            .width(160.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .wrapContentSize(),
+                        elevation = 20.dp
+                        ,
+                        backgroundColor = MaterialTheme.colorScheme.onBackground
+                    ) {
+
+                        Image(
+                            painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${item.profile_path}"),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        Column(
+                            modifier=Modifier.fillMaxSize().padding(bottom = 8.dp),
+                            verticalArrangement = Arrangement.Bottom,
+
+                        ) {
+                            Text(
+                                "${item.name}",
+                                fontSize = 24.sp,
+                                fontWeight = Bold,
+                                color = Color.White,
+                                fontFamily = Font(R.font.font).toFontFamily(),
+                                modifier=Modifier.padding(start = 8.dp)
+                            )
+
+
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+    }
+
+}
+
+
+
+@Preview(showBackground = true)
+@Composable
+private fun AboutthemoviePreview() {
+    AboutTheMovie(title = "hello This is the title of the movie", adult = false, original_language = "English", overview = "Mufasa, a cub lost and alone, meets a sympathetic lion named Taka, the heir to a royal bloodline. The chance meeting sets in motion an expansive journey of a group of misfits searching for their destiny", release_date = "2023", vote_average = 8.0
+    , poster_path = "/jbOSUAWMGzGL1L4EaUF8K6zYFo7.jpg",
+        cast = listOf(
+            Cast(
+                adult = false,
+                gender = 2,
+                id = 1763709,
+                known_for_department = "Acting",
+                name = "Aaron Pierre",
+                original_name = "Aaron Pierre",
+                popularity = 104.416,
+                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+                cast_id = 73,
+                character = "Mufasa (voice)",
+                credit_id = "6784ce60bd793c03544ec5ff",
+                order = 0
+            ),
+            Cast(
+                adult = false,
+                gender = 2,
+                id = 1763709,
+                known_for_department = "Acting",
+                name = "Aaron Pierre",
+                original_name = "Aaron Pierre",
+                popularity = 104.416,
+                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+                cast_id = 73,
+                character = "Mufasa (voice)",
+                credit_id = "6784ce60bd793c03544ec5ff",
+                order = 0
+            ),
+            Cast(
+                adult = false,
+                gender = 2,
+                id = 1763709,
+                known_for_department = "Acting",
+                name = "Aaron Pierre",
+                original_name = "Aaron Pierre",
+                popularity = 104.416,
+                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+                cast_id = 73,
+                character = "Mufasa (voice)",
+                credit_id = "6784ce60bd793c03544ec5ff",
+                order = 0
+            ),
+            Cast(
+                adult = false,
+                gender = 2,
+                id = 1763709,
+                known_for_department = "Acting",
+                name = "Aaron Pierre",
+                original_name = "Aaron Pierre",
+                popularity = 104.416,
+                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+                cast_id = 73,
+                character = "Mufasa (voice)",
+                credit_id = "6784ce60bd793c03544ec5ff",
+                order = 0
+            ),
+            Cast(
+                adult = false,
+                gender = 2,
+                id = 1763709,
+                known_for_department = "Acting",
+                name = "Aaron Pierre",
+                original_name = "Aaron Pierre",
+                popularity = 104.416,
+                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+                cast_id = 73,
+                character = "Mufasa (voice)",
+                credit_id = "6784ce60bd793c03544ec5ff",
+                order = 0
+            ),
+            Cast(
+                adult = false,
+                gender = 2,
+                id = 1763709,
+                known_for_department = "Acting",
+                name = "Aaron Pierre",
+                original_name = "Aaron Pierre",
+                popularity = 104.416,
+                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+                cast_id = 73,
+                character = "Mufasa (voice)",
+                credit_id = "6784ce60bd793c03544ec5ff",
+                order = 0
+            )
+        ))
+
+}
+
+
+@Composable
+fun calculateScaleFor(index: Int, listState: androidx.compose.foundation.lazy.LazyListState): Float {
+    // Get the visible items and the center of the viewport
+    val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
+    val viewportCenter = (listState.layoutInfo.viewportEndOffset + listState.layoutInfo.viewportStartOffset) / 2
+
+    // Find the item info for the given index
+    val itemInfo = visibleItemsInfo.find { it.index == index }
+
+    return if (itemInfo != null) {
+        // Calculate the distance from the center of the viewport
+        val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+        val distanceFromCenter = abs(itemCenter - viewportCenter)
+
+        // Calculate the scale based on the distance
+        1.0f + (0.5f * (1.0f - min(1f, distanceFromCenter / 500f)))
+    } else {
+        1.0f // Default scale if the item is not visible
+    }
+}

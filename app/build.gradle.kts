@@ -61,6 +61,9 @@ dependencies {
 
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.2-alpha")
 
+    
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
+
 
     // Network calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
