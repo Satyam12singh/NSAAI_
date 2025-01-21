@@ -23,6 +23,9 @@ class AboutMovieViewModel : ViewModel() {
     private val _posterPath = mutableStateOf("")
     val posterPath = _posterPath
 
+    private val _imageofmovie = mutableStateOf("")
+    val imageofmovie = _imageofmovie
+
     private val _externalId = mutableStateOf("")
     val externalId = _externalId
 
@@ -36,6 +39,7 @@ class AboutMovieViewModel : ViewModel() {
                 Log.d("AboutMovieViewModel", "API Response: $response")
                 val aboutmovie= Gson().fromJson(response,MovieResultX::class.java)
                 _posterPath.value = aboutmovie.movie_results[0].poster_path ?: "No poster available"
+                _imageofmovie.value=aboutmovie.movie_results[0].backdrop_path?:""
 
             } catch (e: Exception) {
                 Log.e("fetchAboutTheMovie", "Error: ${e.message}")
