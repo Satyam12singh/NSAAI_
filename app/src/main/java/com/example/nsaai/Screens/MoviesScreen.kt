@@ -125,7 +125,7 @@ fun MovieScreen(
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primary.copy(0.3f)),
+                    .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -245,9 +245,8 @@ fun MovieScreen(
                                                         },
                                                         fontWeight = FontWeight.Bold,
                                                         fontFamily = Font(R.font.poppins).toFontFamily(),
-                                                        color = MaterialTheme.colorScheme.onPrimary.copy(
-                                                            1.5f
-                                                        ),
+                                                        color = MaterialTheme.colorScheme.onBackground,
+
 //                                                        modifier=Modifier.padding(bottom = 2.dp)
                                                     )
 

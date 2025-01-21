@@ -1,6 +1,7 @@
 package com.example.nsaai.Screens
 
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate.NightMode
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -10,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 
@@ -34,7 +36,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -82,7 +84,7 @@ fun AboutMovie(modifier: Modifier = Modifier,
 
     Box(modifier = modifier
         .fillMaxSize()
-        .background(MaterialTheme.colors.background)
+        .background(MaterialTheme.colorScheme.background)
     ){
         HorizontalPager(state = pagerState) { page ->
 
@@ -90,13 +92,16 @@ fun AboutMovie(modifier: Modifier = Modifier,
                 0 -> {
 
                     Column(
-                        modifier = Modifier.fillMaxSize()
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(Color.Black, MaterialTheme.colors.background),
-                                    endY = 5000f
-                                )
-                            ),
+                        modifier = Modifier
+                            .fillMaxSize()
+//                            .background(
+//                                brush = Brush.verticalGradient(
+//                                    colors = listOf(Color.Black, Color.Gray),
+//                                    endY = 5000f
+//                                )
+//                            )
+                            .background(MaterialTheme.colorScheme.background)
+                        ,
 
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Top
@@ -145,11 +150,10 @@ fun AboutMovie(modifier: Modifier = Modifier,
                 }
 
                 1 -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text("Hello")
+                    Column {
+
                     }
+
                 }
             }
         }
@@ -162,8 +166,13 @@ fun AboutMovie(modifier: Modifier = Modifier,
             horizontalArrangement = Arrangement.Center
         ) {
             repeat(pagerState.pageCount) { iteration ->
-                val color =
+                val isDarkTheme = isSystemInDarkTheme() // Check if dark theme is enabled
+                val color = if (isDarkTheme) {
+                    if (pagerState.currentPage == iteration) Color.LightGray else Color.DarkGray
+                } else {
                     if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                }
+
                 Box(
                     modifier = Modifier
                         .padding(4.dp)
@@ -176,26 +185,7 @@ fun AboutMovie(modifier: Modifier = Modifier,
     }
 
 
-    }
+}
 
 
-//Image(
-//painter = rememberAsyncImagePainter(model ="https://image.tmdb.org/t/p/w500${image_path}"),
-//contentDescription = "Small Image",
-//modifier = Modifier
-//.size(60.dp)
-//.align(Alignment.BottomEnd)
-//.padding(8.dp)
-//.clip(CircleShape)
-//)
-
-
-
-
-
-//@Preview(showBackground = true)
-//@Composable
-//private fun AboutMoviePreview() {
-//    AboutMovie(viewmodel= AboutMovieViewModel(), viewModel = MovieViewModel(), id = 762509)
-//}
 

@@ -59,6 +59,9 @@ android {
 
 dependencies {
 
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.2-alpha")
+
+
     // Network calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
 // JSON to Kotlin object mapping
