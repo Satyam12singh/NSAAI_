@@ -41,66 +41,19 @@ fun AboutMovie(modifier: Modifier = Modifier,
                id:Int
 
 ) {
-    val externalid = viewModel.externalId.value
-    Log.d("aboutmnovie_exid1", "Fetching external ID for movie ID: $externalid")
 
-    var poster_path by remember { mutableStateOf("") }
+    Log.d("AM id passed","$id")
+    viewModel.fetchExternalIds(id)
 
-    LaunchedEffect(id) {
-        viewModel.fetchExternalIds(id)
-        Log.d("aboutmnovie_externalid", "Fetching external ID for movie ID: $externalid")
+    val externalid_fetched= viewModel.externalId.value
+    Log.d("AM externalid fetched","$externalid_fetched")
 
-    }
+    viewmodel.fetchAboutTheMovie(externalid_fetched)
+    val poster_path=viewmodel.posterPath.value
 
-    LaunchedEffect(externalid) {
-        if (externalid.isNotEmpty()) {
-            viewmodel.fetchAboutTheMovie(externalid)
-            poster_path = viewmodel.posterPath.value
-            Log.d("aboutmnovie_posterpath", "Fetching poster path for movie ID: $poster_path")
-
-        }
-    }
-
-
-
-
-    Column(modifier=  Modifier.fillMaxSize()
-        .background(MaterialTheme.colors.onPrimary),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
-
-        ) {
-
-        Box(
-            modifier= Modifier.fillMaxWidth()
-                .height(600.dp)
-                .background(MaterialTheme.colors.onBackground)
-
-        ) {
-
-//            Image(painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/original/oHPoF0Gzu8xwK4CtdXDaWdcuZxZ.jpg"), contentDescription = null)
-            Image(painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/original/${poster_path}"), contentDescription = null)
-
-
-
-        }
-
-    }
-
+    Log.d("AM poster path","$poster_path")
 
 
 }
 
 
-//@Preview(showBackground = true)
-//@Composable
-//private fun ABoutMoviePreview() {
-//    val mockAboutMovieViewModel = AboutMovieViewModel().apply {
-//        posterPath.value = "/jbOSUAWMGzGL1L4EaUF8K6zYFo7.jpg" // Replace with a valid TMDB poster path for preview
-//    }
-//
-//    val mockMovieViewModel = MovieViewModel().apply {
-//        externalId.value = "tt13186482" // Mock external ID
-//    }
-//    AboutMovie(modifier=Modifier.fillMaxSize(),viewmodel = AboutMovieViewModel(), id=762509,viewModel = MovieViewModel())
-//}

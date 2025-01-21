@@ -93,8 +93,8 @@ fun Navigation(
             arguments= listOf(navArgument("id"){
                 type= NavType.IntType
             })
-            ) {backStackENtry ->
-            val movieId = backStackENtry.arguments?.getInt("id") ?: 0
+            ) {backStackEntry ->
+            val movieId = backStackEntry.arguments?.getInt("id") ?: 0
             Log.d("is id sent to aboutmnovie?","$movieId")
 
             AboutMovie(viewModel=MovieViewModel(),viewmodel= AboutMovieViewModel(),id= movieId)

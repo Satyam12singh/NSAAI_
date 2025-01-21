@@ -33,8 +33,9 @@ class AboutMovieViewModel : ViewModel() {
             try {
                 val response = fetchAboutMovie(id)
 //                val movieResults = Gson().fromJson(response, ExternalIds::class.java)
+                Log.d("AboutMovieViewModel", "API Response: $response")
                 val aboutmovie= Gson().fromJson(response,MovieResultX::class.java)
-                _posterPath.value= aboutmovie.poster_path
+                _posterPath.value = aboutmovie.movie_results[0].poster_path ?: "No poster available"
 
             } catch (e: Exception) {
                 Log.e("fetchAboutTheMovie", "Error: ${e.message}")
