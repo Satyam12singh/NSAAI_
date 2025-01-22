@@ -61,7 +61,7 @@ fun SignUpScreen(navController: NavController,
     val visible = remember { mutableStateOf(true) }
     val _ispasswordvisibleforsignup= viewModel.ispasswordvisible.value
 
-    val snackbarHostState = remember { SnackbarHostState() }
+
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }

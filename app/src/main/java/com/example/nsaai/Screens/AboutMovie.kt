@@ -36,6 +36,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.BrokenImage
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.nsaai.CastByApi.Cast
 import com.example.nsaai.R
@@ -134,30 +136,69 @@ fun AboutMovie(modifier: Modifier = Modifier,
                                 .clip(RoundedCornerShape(10.dp)),
                             contentAlignment = Alignment.TopCenter
                         ) {
+                            val painter= rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/original/${poster_path}")
+                            val painterstate= painter.state
                             Image(
-                                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/original/${poster_path}"),
+                                painter = painter,
                                 contentDescription = null
                             )
+                            when(painterstate){
+                                is AsyncImagePainter.State.Error->{
+                                    Box(modifier= Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center){
 
-                            Card(
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .size(40.dp)
-                                    .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
-                                    .clip(CircleShape)
-                                    .padding(2.dp),
-                                elevation = 20.dp,
-                                backgroundColor = Color.White
+                                        Column {
+                                            Icon(
+                                                imageVector = Icons.Rounded.BrokenImage,
+                                                contentDescription = "Image not Loaded Properly",
+                                                tint = MaterialTheme.colorScheme.onBackground,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                            Text(
+                                                text = "Image not Loaded Properly",
+                                                color = MaterialTheme.colorScheme.onBackground
+
+                                            )
+                                        }
+                                    }
+
+                                }
+                                is AsyncImagePainter.State.Success ->{
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .size(40.dp)
+                                            .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
+                                            .clip(CircleShape)
+                                            .padding(2.dp),
+                                        elevation = 20.dp,
+                                        backgroundColor = Color.White
 
 
-                            )
-                            {
-                                Image(
-                                    painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${image_path}"),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                                    )
+                                    {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${image_path}"),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
+                                is AsyncImagePainter.State.Loading -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                                is AsyncImagePainter.State.Empty -> {
+                                    Text(
+                                        text = "No image to display",
+                                        modifier = Modifier.align(Alignment.Center),
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
+
                             }
+
                         }
 
                     }
