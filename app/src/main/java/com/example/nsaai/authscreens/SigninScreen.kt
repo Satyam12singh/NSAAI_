@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.rounded.CodeOff
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.ripple.rememberRipple
@@ -46,6 +47,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.nsaai.Navigation.Screens
 import com.example.nsaai.ViewModels.AuthState
 import com.example.nsaai.ViewModels.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +61,9 @@ fun SignInScreen(
 ) {
     val authState by viewModel.authState
     val context = LocalContext.current
+
+    var showforgotpassworddialog by rememberSaveable { mutableStateOf(false) }
+    var emailforforgotpass by remember { mutableStateOf("") }
 
     val isPasswordVisible = viewModel.isPasswordVisible.value
 
@@ -208,8 +213,75 @@ fun SignInScreen(
 
                                 Text("Remember me", color = MaterialTheme.colorScheme.background)
                             }
-                            Text("Forgot password?", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            Text("Forgot password?", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold,
+                                modifier=Modifier.clickable {
+                                    showforgotpassworddialog= true
+
+                                })
                         }
+                        if(showforgotpassworddialog){
+                            AlertDialog(modifier=Modifier.width(800.dp).
+                                padding(horizontal = 10.dp),
+                                onDismissRequest = { showforgotpassworddialog = false }, // Handle dismissal
+                                icon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Email,
+                                        contentDescription = "Email Icon"
+                                    )
+                                },
+                                title = {
+                                    Text("Enter Your Email Address")
+                                },
+                                text = {
+                                    Column {
+
+                                        TextField(
+                                            value = emailforforgotpass,
+                                            onValueChange = { emailforforgotpass=it  },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(10.dp)),
+                                            placeholder = { Text(text = "Email") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                            singleLine = true,
+                                            trailingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Email,
+                                                    contentDescription = "Enter Email Id"
+                                                )
+                                            }
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    TextButton(
+                                        onClick = {
+                                            // Handle confirmation (e.g., send reset email)
+                                            FirebaseAuth.getInstance().sendPasswordResetEmail(emailforforgotpass)
+                                                .addOnCompleteListener{task ->
+                                                    if(task.isSuccessful){
+                                                        Toast.makeText(context,"Reset Email Sent",Toast.LENGTH_SHORT).show()
+                                                    }else{
+                                                        Toast.makeText(context,"Error",Toast.LENGTH_SHORT).show()
+                                                    }
+
+                                                }
+                                            showforgotpassworddialog = false
+                                        }
+                                    ) {
+                                        Text("Confirm")
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(
+                                        onClick = { showforgotpassworddialog = false } // Dismiss dialog
+                                    ) {
+                                        Text("Dismiss")
+                                    }
+                                }
+                            )
+                        }
+
 
                         Spacer(modifier = Modifier.height(20.dp))
 
