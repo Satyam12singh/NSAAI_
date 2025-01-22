@@ -1,5 +1,6 @@
 package com.example.nsaai.Screens
 
+import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,11 +41,13 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.BrokenImage
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight.Companion.Black
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
@@ -52,6 +56,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.nsaai.CastByApi.Cast
@@ -59,6 +66,10 @@ import com.example.nsaai.R
 
 import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -81,6 +92,9 @@ fun AboutMovie(modifier: Modifier = Modifier,
     val poster_path = viewmodel.posterPath.value
     val image_path = viewmodel.imageofmovie.value
 
+    val key = viewmodel.key.value
+    val istrailer= viewmodel.trailerornot.value
+
 //    Details of Movie
     viewmodel.fetchAllMovieDetails(id)
     val title= viewmodel.title.value
@@ -98,7 +112,7 @@ fun AboutMovie(modifier: Modifier = Modifier,
     Log.d("AM poster path", "$poster_path")
 //    val scrollState = rememberScrollState()
 
-    val pagerState = rememberPagerState(pageCount = { 2 }) // Two pages
+    val pagerState = rememberPagerState(pageCount = { 3 }) // Two pages
 
     Box(modifier = modifier
         .fillMaxSize()
@@ -168,7 +182,11 @@ fun AboutMovie(modifier: Modifier = Modifier,
                                         modifier = Modifier
                                             .align(Alignment.BottomCenter)
                                             .size(40.dp)
-                                            .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
+                                            .border(
+                                                width = 2.dp,
+                                                color = Color.Gray,
+                                                shape = CircleShape
+                                            )
                                             .clip(CircleShape)
                                             .padding(2.dp),
                                         elevation = 20.dp,
@@ -211,6 +229,9 @@ fun AboutMovie(modifier: Modifier = Modifier,
                         AboutTheMovie(title = title, adult = adult, original_language = original_language, overview = overview, release_date = release_date, vote_average = vote_average, poster_path = poster_path,cast=cast)
 
                     }
+                2 -> {
+                    PlayYoutubeTrailer(id=id,viewmodel=viewmodel, lifeCycleOwner = LocalLifecycleOwner.current)
+                }
 
                 }
             }
@@ -241,6 +262,7 @@ fun AboutMovie(modifier: Modifier = Modifier,
             }
         }
     }
+
 
 
 }
@@ -295,14 +317,16 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                   )
 {
     Column(
-        modifier=Modifier.fillMaxSize()
+        modifier= Modifier
+            .fillMaxSize()
             .padding(horizontal = 10.dp)
             .padding(top = 8.dp),
         horizontalAlignment = Alignment.Start
     ) {
 
         Text("${title}",
-            modifier= Modifier.fillMaxWidth()
+            modifier= Modifier
+                .fillMaxWidth()
                 .padding(8.dp),
             fontFamily = Font(R.font.font).toFontFamily(),
             fontSize = 35.sp,
@@ -311,9 +335,10 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
             color = MaterialTheme.colorScheme.onBackground
 
         )
-        Spacer(modifier=Modifier.height(60.dp))
+        Spacer(modifier=Modifier.height(50.dp))
         Row(
-            modifier=Modifier.fillMaxWidth()
+            modifier= Modifier
+                .fillMaxWidth()
                 .padding(8.dp),
             horizontalArrangement = Arrangement.Absolute.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -400,7 +425,7 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                 items(cast.size) {
                     cast.forEach {item ->
                         Card(
-                            modifier=Modifier
+                            modifier= Modifier
                                 .padding(8.dp)
                                 .height(200.dp)
                                 .width(160.dp)
@@ -417,7 +442,9 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                                 modifier = Modifier.fillMaxSize()
                             )
                             Column(
-                                modifier=Modifier.fillMaxSize().padding(bottom = 8.dp),
+                                modifier= Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 8.dp),
                                 verticalArrangement = Arrangement.Bottom,
 
                                 ) {
@@ -563,5 +590,59 @@ fun calculateScaleFor(index: Int, listState: androidx.compose.foundation.lazy.La
         1.0f + (0.5f * (1.0f - min(1f, distanceFromCenter / 500f)))
     } else {
         1.0f // Default scale if the item is not visible
+    }
+}
+
+@Composable
+fun PlayYoutubeTrailer(
+    modifier: Modifier = Modifier,
+    id: Int,
+    viewmodel: AboutMovieViewModel,
+    lifeCycleOwner: LifecycleOwner
+) {
+    viewmodel.fetchyoutubetrailerid(id)
+    val listofvideolinks = viewmodel.listofresultlinks.value
+
+    val orientation = LocalConfiguration.current.orientation
+    val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
+    val systemUiController = rememberSystemUiController()
+
+
+    LaunchedEffect(isLandscape) {
+        systemUiController.isSystemBarsVisible = !isLandscape
+    }
+
+
+    val firstTrailer = listofvideolinks.firstOrNull { it.type == "Trailer" }
+
+
+    firstTrailer?.let { video ->
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            AndroidView(
+                modifier = if (isLandscape) {
+                    Modifier.fillMaxSize()
+                } else {
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                },
+                factory = { context ->
+                    YouTubePlayerView(context = context).apply {
+                        lifeCycleOwner.lifecycle.addObserver(this)
+
+                        addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                            override fun onReady(youTubePlayer: YouTubePlayer) {
+                                // Load the first trailer video
+                                youTubePlayer.loadVideo(video.key, 0f)
+                            }
+                        })
+                    }
+                }
+            )
+        }
     }
 }

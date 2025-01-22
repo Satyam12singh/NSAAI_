@@ -9,6 +9,8 @@ import com.example.nsaai.CastByApi.Cast
 import com.example.nsaai.CastByApi.CrewMembers
 import com.example.nsaai.DetailOfMovieApi.DetailOfMovie
 import com.example.nsaai.DetailOfMovieApi.Genre
+import com.example.nsaai.TrailerFromApi.Result
+import com.example.nsaai.TrailerFromApi.Trailer
 import com.example.nsaai.datafromapi.ExternalIds
 import com.example.nsaai.datafromapi.MovieResultExternalId
 import com.example.nsaai.datafromapi.MovieResultX
@@ -60,6 +62,16 @@ class AboutMovieViewModel : ViewModel() {
     val cast = _cast
 
     private val apiKey = BuildConfig.API_KEY
+    private val normalapiKey= BuildConfig.api_key_normal
+
+    private val _key= mutableStateOf("")
+    val key=_key
+
+    private val _istrailerornot= mutableStateOf("")
+    val trailerornot= _istrailerornot
+
+    private val _listofvideolinks = mutableStateOf<List<Result>>(listOf())
+    val listofresultlinks = _listofvideolinks
 
     // Fetch basic movie details
     fun fetchAboutTheMovie(id: String) {
@@ -98,6 +110,7 @@ class AboutMovieViewModel : ViewModel() {
             response.body?.string() ?: throw Exception("Empty Response")
         }
     }
+
 
     // Fetch cast details
     fun fetchCastDetails(id: Int) {
@@ -163,6 +176,39 @@ class AboutMovieViewModel : ViewModel() {
         return withContext(Dispatchers.IO) {
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) {
+                throw Exception("HTTP Error: ${response.code}")
+            }
+            response.body?.string() ?: throw Exception("Empty Response")
+        }
+    }
+
+    fun fetchyoutubetrailerid(id: Int){
+        viewModelScope.launch {
+            try{
+                val response= fetchYoutubeTrailer(id)
+                val aboutyoutubedata= Gson().fromJson(response,Trailer::class.java)
+
+//                _key.value= aboutyoutubedata.key
+//                _istrailerornot.value=aboutyoutubedata.type
+                _listofvideolinks.value=aboutyoutubedata.results
+
+            }catch (e: Exception){
+                Log.e("fetchyoutubetrailerid", "Error: ${e.message}")
+            }
+
+        }
+    }
+
+    private suspend fun fetchYoutubeTrailer(id: Int): String {
+        val client=OkHttpClient()
+        val request= Request.Builder()
+            .url("https://api.themoviedb.org/3/movie/${id}/videos?api_key=${normalapiKey}")
+            .get()
+            .build()
+
+        return withContext(Dispatchers.IO){
+            val response=client.newCall(request).execute()
+            if(!response.isSuccessful){
                 throw Exception("HTTP Error: ${response.code}")
             }
             response.body?.string() ?: throw Exception("Empty Response")

@@ -1,6 +1,8 @@
 package com.example.nsaai.authscreens
 
+import android.media.Image
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.nsaai.Navigation.Screens
+import com.example.nsaai.R
 
 
 @Composable
@@ -48,10 +53,9 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
 //        Image(
-//            painter = painterResource(R.drawable.background),
-//            contentDescription = "login background",
-//            modifier = Modifier.fillMaxSize(),
-//            contentScale = ContentScale.Crop // To make the image cover the entire Box
+//            painterResource(R.drawable.background),
+//            contentDescription = null,
+//            modifier= Modifier.fillMaxSize()
 //        )
         Text("Welcome Back!", fontSize = 30.sp, fontWeight = FontWeight.Bold)
 

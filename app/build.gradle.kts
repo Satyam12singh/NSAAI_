@@ -36,14 +36,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "API_KEY", "\"${localProperties.getProperty("API_KEY")}\"")
+            buildConfigField("String", "api_key_normal", "\"${localProperties.getProperty("api_key_normal")}\"")
         }
         debug {
-            buildConfigField("String", "API_KEY", localProperties.getProperty("API_KEY"))
-        }
-        release {
-            buildConfigField("String", "API_KEY", localProperties.getProperty("API_KEY"))
+            buildConfigField("String", "API_KEY", "\"${localProperties.getProperty("API_KEY")}\"")
+            buildConfigField("String", "api_key_normal", "\"${localProperties.getProperty("api_key_normal")}\"")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -101,6 +102,8 @@ dependencies {
 //    implementation("com.google.android.libraries.identity.googleid:googleid:1.5.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.28.0")
+
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.28")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
