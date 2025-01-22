@@ -146,7 +146,7 @@ fun HomeScreen(modifier: Modifier = Modifier,
                         .height(150.dp)
                         .width(200.dp)
                         .clip(RoundedCornerShape(50.dp))
-                        .background(MaterialTheme.colorScheme.onPrimary)
+                        .background(Color.Black)
                         .clickable {
                             Toast.makeText(context,"Coming Soon",Toast.LENGTH_SHORT).show()
                         }

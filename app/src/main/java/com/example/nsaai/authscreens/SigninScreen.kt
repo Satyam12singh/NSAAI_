@@ -19,6 +19,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.CodeOff
+import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,6 +39,8 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.nsaai.Navigation.Screens
@@ -55,6 +59,8 @@ fun SignInScreen(
 ) {
     val authState by viewModel.authState
     val context = LocalContext.current
+
+    val isPasswordVisible = viewModel.isPasswordVisible.value
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -149,19 +155,44 @@ fun SignInScreen(
                                 .padding(16.dp)
                                 .clip(RoundedCornerShape(10.dp)),
                             placeholder = { Text(text = "Email") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            singleLine = true,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Email,
+                                    contentDescription = "Enter Email Id"
+                                )
+                            }
                         )
 
-                        TextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            placeholder = { Text(text = "Password") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                        )
+                        Row (
+                            modifier=Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            TextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                placeholder = { Text(text = "Password") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                singleLine = true,
+                                visualTransformation =if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    Icon(
+                                        modifier = Modifier.clickable {
+                                            viewModel.togglePasswordVisibility()
+                                        },
+                                        imageVector = Icons.Rounded.CodeOff,
+                                        contentDescription = "Enter Password"
+                                    )
+                                }
+                            )
+
+                        }
+
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -269,6 +300,7 @@ fun SignInScreen(
             }
         }
     }
+
 }
 
 
@@ -286,6 +318,7 @@ fun SignInScreen(
 //
 //        }
 //}
+
 
 
 

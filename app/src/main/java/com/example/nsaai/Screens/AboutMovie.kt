@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight.Companion.Black
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.toFontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,7 +92,7 @@ fun AboutMovie(modifier: Modifier = Modifier,
     viewmodel.fetchCastDetails(id)
     val cast=viewmodel.cast.value
 
-
+//    val content="Lorem ipsum odor amet, consectetuer adipiscing elit. Quisque malesuada vivamus morbi at; nisi faucibus. Cursus netus nulla dictumst nec lobortis mattis. Tristique leo eleifend nullam et aptent scelerisque egestas pulvinar. Nam sem purus et nibh habitant sem ac et. Nostra luctus placerat integer ultricies aptent euismod. Maximus at adipiscing aliquet magna non varius volutpat adipiscing! Ac commodo at maecenas eget egestas auctor. Nec torquent dolor urna libero euismod sagittis neque lobortis. Convallis faucibus aliquet dolor ex duis arcu. Fermentum fermentum blandit mi conubia semper condimentum etiam. Varius viverra fermentum nulla litora class. Odio sodales interdum sed inceptos integer et taciti sollicitudin. Netus torquent dis neque iaculis curabitur mattis ad elementum erat. Parturient primis curae pulvinar urna varius et id. Viverra et finibus tincidunt taciti ad hac porttitor venenatis. Bibendum congue placerat lobortis facilisi at potenti. Accumsan faucibus tincidunt vivamus erat class. Cursus quis sodales molestie natoque viverra netus habitant. Hac neque lacus primis mi nisi aliquet sodales dis iaculis. Ex iaculis tempus fermentum cursus ex et. Justo facilisi primis netus parturient, laoreet libero finibus mauris curae. Dignissim mus sapien, aliquam nostra morbi primis eu. Proin senectus ultricies sollicitudin sagittis dapibus hac. Magna sed a; lectus platea elementum mattis. Proin tortor taciti magnis velit felis rutrum risus enim. Conubia parturient iaculis aliquet est sapien curabitur. Nulla litora mattis nunc facilisis dapibus pulvinar non. Nostra natoque faucibus aliquet; pretium efficitur id. Vehicula erat conubia libero suspendisse eget sollicitudin dis. Turpis mattis fermentum natoque lectus mattis libero leo vivamus. Morbi magna eget adipiscing senectus et; per hendrerit? Id molestie taciti aliquam massa integer curabitur sollicitudin iaculis. Nam vehicula porta rhoncus curabitur lorem neque ex. Varius sapien arcu massa urna auctor. Augue mollis sociosqu pellentesque convallis nec ex blandit molestie id. Maximus at eleifend ad gravida taciti. Massa class pulvinar fames placerat libero?"
     Log.d("AM poster path", "$poster_path")
 //    val scrollState = rememberScrollState()
 
@@ -269,7 +270,7 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
             color = MaterialTheme.colorScheme.onBackground
 
         )
-        Spacer(modifier=Modifier.height(20.dp))
+        Spacer(modifier=Modifier.height(60.dp))
         Row(
             modifier=Modifier.fillMaxWidth()
                 .padding(8.dp),
@@ -316,6 +317,14 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                     fontSize = 24.sp,
                     color = MaterialTheme.colorScheme.onBackground
                     )
+                Spacer(modifier=Modifier.height(8.dp))
+                Text("Language: $original_language",
+                    modifier=Modifier.padding(start = 8.dp),
+                    fontFamily = Font(R.font.font).toFontFamily(),
+                    fontWeight = Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
 
             }
 
@@ -325,9 +334,10 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
 
         }
 
-        Spacer(modifier=Modifier.height(100.dp))
+        Spacer(modifier=Modifier.height(60.dp))
         val scrollState = rememberScrollState()
-        Column(modifier= Modifier.verticalScroll(scrollState)) {
+        Column(modifier= Modifier.verticalScroll(scrollState)
+        ) {
             Text(
             "${overview}",
             fontSize = 28.sp,
@@ -336,50 +346,61 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
             fontFamily = Font(R.font.font).toFontFamily(),
 
         )
-        }
-        Spacer(modifier=Modifier.height(80.dp))
-
-        LazyRow {
-            items(cast.size) { 
-                cast.forEach {item ->
-                    Card(
-                        modifier=Modifier
-                            .padding(8.dp)
-                            .height(200.dp)
-                            .width(160.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .wrapContentSize(),
-                        elevation = 20.dp
-                        ,
-                        backgroundColor = MaterialTheme.colorScheme.onBackground
-                    ) {
-
-                        Image(
-                            painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${item.profile_path}"),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        Column(
-                            modifier=Modifier.fillMaxSize().padding(bottom = 8.dp),
-                            verticalArrangement = Arrangement.Bottom,
-
+            Spacer(modifier=Modifier.height(40.dp))
+            Text(
+                "Cast"
+                ,
+                fontSize = 30.sp,
+                fontWeight = Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontFamily = Font(R.font.montserrat).toFontFamily(),
+            )
+            LazyRow {
+                items(cast.size) {
+                    cast.forEach {item ->
+                        Card(
+                            modifier=Modifier
+                                .padding(8.dp)
+                                .height(200.dp)
+                                .width(160.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .wrapContentSize(),
+                            elevation = 20.dp
+                            ,
+                            backgroundColor = MaterialTheme.colorScheme.onBackground
                         ) {
-                            Text(
-                                "${item.name}",
-                                fontSize = 24.sp,
-                                fontWeight = Bold,
-                                color = Color.White,
-                                fontFamily = Font(R.font.font).toFontFamily(),
-                                modifier=Modifier.padding(start = 8.dp)
-                            )
 
+                            Image(
+                                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${item.profile_path}"),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            Column(
+                                modifier=Modifier.fillMaxSize().padding(bottom = 8.dp),
+                                verticalArrangement = Arrangement.Bottom,
+
+                                ) {
+                                Text(
+                                    "${item.name}",
+                                    fontSize = 24.sp,
+                                    fontWeight = Bold,
+                                    color = Color.White,
+                                    fontFamily = Font(R.font.font).toFontFamily(),
+                                    modifier=Modifier.padding(start = 8.dp),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
+
+                            }
 
                         }
-
                     }
                 }
             }
+            Spacer(modifier=Modifier.height(50.dp))
         }
+
 
 
     }

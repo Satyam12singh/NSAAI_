@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CodeOff
+import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,8 +32,11 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -54,6 +59,7 @@ fun SignUpScreen(navController: NavController,
     val context = LocalContext.current
 
     val visible = remember { mutableStateOf(true) }
+    val _ispasswordvisibleforsignup= viewModel.ispasswordvisible.value
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -203,7 +209,8 @@ fun SignUpScreen(navController: NavController,
                                 .fillMaxWidth()
                                 .padding(16.dp)
                                 .clip(RoundedCornerShape(10.dp)),
-                            placeholder = { Text(text = "Name") }
+                            placeholder = { Text(text = "Name") },
+                            singleLine = true
                         )
 
 
@@ -217,7 +224,15 @@ fun SignUpScreen(navController: NavController,
                                 .padding(16.dp)
                                 .clip(RoundedCornerShape(10.dp)),
                             placeholder = { Text(text = "Email") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            maxLines = 1,
+                            singleLine = true,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Email,
+                                    contentDescription = "Enter Email"
+                                )
+                            }
                         )
 
 
@@ -229,7 +244,19 @@ fun SignUpScreen(navController: NavController,
                                 .padding(16.dp)
                                 .clip(RoundedCornerShape(10.dp)),
                             placeholder = { Text(text = "Password") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            maxLines = 1,
+                            singleLine = true,
+                            visualTransformation = if (_ispasswordvisibleforsignup) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.CodeOff,
+                                    contentDescription = "Password Visibility",
+                                    modifier=Modifier.clickable {
+                                        viewModel.togglepasswordVisibility()
+                                    }
+                                )
+                            }
                         )
 
 
@@ -352,7 +379,7 @@ fun SignUpScreen(navController: NavController,
     }
 
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
 fun SignUpScreenPreview(modifier: Modifier = Modifier) {
     SignUpScreen(viewModel =  viewModel(),navController = rememberNavController())

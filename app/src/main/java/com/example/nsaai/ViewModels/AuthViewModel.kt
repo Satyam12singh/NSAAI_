@@ -7,12 +7,25 @@ import com.google.firebase.auth.FirebaseAuth
 
 class AuthViewModel : ViewModel() {
 
+    private val _isPassowrdVisible = mutableStateOf(false)
+    val isPasswordVisible: State<Boolean> = _isPassowrdVisible
+
+    private val _ispasswordvisible= mutableStateOf(false)
+    val ispasswordvisible: State<Boolean> = _ispasswordvisible
+
     private val _authState = mutableStateOf<AuthState>(AuthState.Idle)
     val authState: State<AuthState> = _authState
 
     // Use val with only a getter for isAuthenticated
     val isAuthenticated: Boolean
         get() = FirebaseAuth.getInstance().currentUser != null
+
+    fun togglePasswordVisibility() {
+        _isPassowrdVisible.value = !_isPassowrdVisible.value
+    }
+    fun togglepasswordVisibility() {
+        _ispasswordvisible.value = !_ispasswordvisible.value
+    }
 
     fun login(email: String, password: String) {
         _authState.value = AuthState.Loading
