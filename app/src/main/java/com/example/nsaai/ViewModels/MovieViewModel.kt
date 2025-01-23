@@ -2,6 +2,7 @@ package com.example.nsaai.ViewModels
 
 import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,10 +31,13 @@ class MovieViewModel : ViewModel() {
     private val _trendmoviestate= mutableStateOf(MovieState())
     val trendmoviestate: State<MovieState> = _trendmoviestate
 
-    private val _alltrendingmovies = mutableListOf<MovieResult>()
+    private val _popularmoviestate= mutableStateOf(MovieState())
+    val popularmoviestate:State<MovieState> = _popularmoviestate
+
+    private val _alltrendingmovies = mutableStateOf<List<MovieResult>>(listOf())
     val alltrendingmovies= _alltrendingmovies
 
-    private val _allpopmovies= mutableListOf<MovieResult>()
+    private val _allpopmovies=  mutableStateOf<List<MovieResult>>(listOf())
     val allpopmovies= _allpopmovies
 //    private val _alltrendmovie = mutableStateOf<List<Result>>(listOf())
 //    val alltrendmovie = _alltrendmovie
@@ -46,18 +50,25 @@ class MovieViewModel : ViewModel() {
     // Automatically fetch movies when the ViewModel initializes
     init {
         fetchMovies()
+        fetchTrendingMovies()
+        fetchPopularMovies()
     }
 
     fun fetchTrendingMovies() {
         viewModelScope.launch {
             try {
 
-
+                val allMovies = mutableListOf<MovieResult>()
                 val response = FetchTrendingMovie()
                 val trendmovieData = Gson().fromJson(response, MovieData::class.java)
 
-                _alltrendingmovies.clear()
-                _alltrendingmovies.addAll(trendmovieData.results)
+//                _alltrendingmovies.clear()
+                _alltrendingmovies.value = (trendmovieData.results)
+                _trendmoviestate.value = _trendmoviestate.value.copy(
+                    list = allMovies,
+                    loading = false,
+                    error = null
+                )
 
             } catch (e: Exception) {
                 _trendmoviestate.value = _trendmoviestate.value.copy(
@@ -91,15 +102,21 @@ class MovieViewModel : ViewModel() {
         viewModelScope.launch {
             try{
 
-
+                val allMovies = mutableListOf<MovieResult>()
                 val response = FetchPopularMovies()
                 val popMoviedata = Gson().fromJson(response, MovieData::class.java)
 
-                _allpopmovies.clear()
-                _allpopmovies.addAll(popMoviedata.results)
+//                _allpopmovies.clear()
+                _allpopmovies.value= (popMoviedata.results)
+
+                _popularmoviestate.value = _popularmoviestate.value.copy(
+                    list = popMoviedata.results,
+                    loading = false,
+                    error = null
+                )
 
             }catch (e:Exception){
-                _trendmoviestate.value=_trendmoviestate.value.copy(
+                _popularmoviestate.value=_popularmoviestate.value.copy(
                     loading = false,
                     error = e.message
                 )

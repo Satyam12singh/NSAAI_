@@ -1,0 +1,179 @@
+package com.example.nsaai.Screens
+
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+
+import androidx.compose.ui.text.font.FontWeight
+
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import com.example.nsaai.TopBar.TopBarMovie
+import com.example.nsaai.ViewModels.MovieViewModel
+import com.example.nsaai.datafromapi.MovieResult
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.min
+import kotlin.time.Duration.Companion.seconds
+
+@Composable
+fun PopularMovieScreen(
+    modifier: Modifier = Modifier,
+    viewModel: MovieViewModel,
+    navController: NavController,
+) {
+    val popularMovieState = viewModel.popularmoviestate.value
+    val popularMoviesList = viewModel.allpopmovies.value
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefreshing)
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+
+    Scaffold(
+        topBar = {
+            TopBarMovie(navController = navController,name= "Popular Movies")
+        }
+    ) { paddingValues ->
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = {
+                coroutineScope.launch {
+                    isRefreshing = true
+                    viewModel.fetchPopularMovies()
+                    delay(3.seconds)
+                    isRefreshing = false
+                }
+            }
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                if (popularMovieState.loading) {
+                    // Center the loading indicator
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center // Center alignment
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 4.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(36.dp)
+                    ) {
+                        itemsIndexed(popularMoviesList) { index, movie ->
+                            val scale = if (isItemCentered(index, listState)) {
+                                1.0f // Scale factor for the centered item
+                            } else {
+                                0.9f // Default scale for other items
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .height(150.dp)
+                                    .fillMaxWidth()
+                                    .scale(scale)
+                                    .clip(RoundedCornerShape(30.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(0.5f)),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                val context = LocalContext.current
+                                Box(
+                                    modifier = Modifier
+                                        .height(150.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .clickable {
+                                            navController.navigate("aboutmovie/${movie.id}")
+                                        }
+                                        .background(Color.Black),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(
+                                            model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"
+                                        ),
+                                        contentDescription = movie.original_title,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(20.dp))
+
+                                    )
+                                    Text(
+                                        text = movie.original_title,
+                                        fontWeight = FontWeight.Bold,
+//                                        fontFamily = Font(R.font.montserrat).toFontFamily(),
+                                        fontSize = 24.sp,
+                                        color = Color.White,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .padding(8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun isItemCentered(index: Int, listState: LazyListState): Boolean {
+    val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
+    val viewportCenter = (listState.layoutInfo.viewportEndOffset + listState.layoutInfo.viewportStartOffset) / 2
+
+    val itemInfo = visibleItemsInfo.find { it.index == index }
+
+    return itemInfo?.let {
+        val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+        val distanceFromCenter = abs(itemCenter - viewportCenter)
+        distanceFromCenter < itemInfo.size / 2 // Check if the item is the closest to the center
+    } ?: false
+}
