@@ -100,7 +100,7 @@ fun HomeScreen(modifier: Modifier = Modifier,
                 .background(MaterialTheme.colorScheme.primary.copy(0.5f)),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            ) {
 
 //                Button(
 //                    onClick = {
@@ -138,7 +138,7 @@ fun HomeScreen(modifier: Modifier = Modifier,
                         fontFamily = Font(R.font.font).toFontFamily(),
                         color = Color.White
 
-                        )
+                    )
                 }
                 Spacer(modifier=Modifier.height(30.dp))
                 Box (
@@ -191,11 +191,11 @@ fun DrawerContent(modifier: Modifier = Modifier,
         Column (modifier = Modifier.padding(vertical = 30.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            ){
+        ){
             Text("Just Chill!!",
-            modifier= Modifier.padding(16.dp),
-            textAlign = TextAlign.Center,
-            fontSize = 24.sp)
+                modifier= Modifier.padding(16.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 24.sp)
         }
 
 
@@ -230,17 +230,17 @@ fun DrawerContent(modifier: Modifier = Modifier,
             }
         )
         Spacer(modifier=Modifier.height(16.dp))
-            NavigationDrawerItem(
-                icon = { Icon(imageVector = Icons.Rounded.Logout, contentDescription = null) },
-                label = { Text("LogOut") },
-                selected = false,
-                onClick = {
-                    viewModel.logout()
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
+        NavigationDrawerItem(
+            icon = { Icon(imageVector = Icons.Rounded.Logout, contentDescription = null) },
+            label = { Text("LogOut") },
+            selected = false,
+            onClick = {
+                viewModel.logout()
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = true }
                 }
-            )
+            }
+        )
 
     }
 
