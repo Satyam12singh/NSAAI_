@@ -11,4 +11,6 @@ sealed class Screens(val route: String) {
     object AboutMovie: Screens("aboutmovie/{id}")
     object PopularMovie:Screens("popularmovie")
     object TrendingMovies:Screens("trendingmovie")
+    object Notification:Screens("notification")
+
 }

@@ -31,11 +31,17 @@ class MovieViewModel : ViewModel() {
     private val _trendmoviestate= mutableStateOf(MovieState())
     val trendmoviestate: State<MovieState> = _trendmoviestate
 
+    private val _upcomingmoviestate= mutableStateOf(MovieState())
+    val upcomingmoviestate: State<MovieState> = _upcomingmoviestate
+
     private val _popularmoviestate= mutableStateOf(MovieState())
     val popularmoviestate:State<MovieState> = _popularmoviestate
 
     private val _alltrendingmovies = mutableStateOf<List<MovieResult>>(listOf())
     val alltrendingmovies= _alltrendingmovies
+
+    private val _allUpcomingMovies = mutableListOf<MovieResult>()
+    val allupcomingMovies= _allUpcomingMovies
 
     private val _allpopmovies=  mutableStateOf<List<MovieResult>>(listOf())
     val allpopmovies= _allpopmovies
@@ -52,7 +58,55 @@ class MovieViewModel : ViewModel() {
         fetchMovies()
         fetchTrendingMovies()
         fetchPopularMovies()
+        fetchUpcomingMovie()
     }
+
+
+
+    fun fetchUpcomingMovie() {
+        viewModelScope.launch {
+            try {
+//                val allUpcomingMovies = mutableListOf<MovieResult>()
+                for (page in 1..10) { // Fetch all 10 pages
+                    val response = fetchAllMovies(page)
+                    val UpcomingmovieData = Gson().fromJson(response, MovieData::class.java)
+                    _allUpcomingMovies.addAll(UpcomingmovieData.results)
+                }
+
+                _upcomingmoviestate.value = _upcomingmoviestate.value.copy(
+                    list = _allUpcomingMovies,
+                    loading = false,
+                    error = null
+                )
+            } catch (e: Exception) {
+                _upcomingmoviestate.value = _upcomingmoviestate.value.copy(
+                    loading = false,
+                    error = e.message
+                )
+            }
+        }
+    }
+
+    private suspend fun fetchAllUpcomingMovie(page: Int): String {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=${page}")
+            .get()
+            .addHeader("accept", "application/json")
+            .addHeader("Authorization", "Bearer $apiKey") // Using the apiKey variable correctly
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            val response: Response = client.newCall(request).execute()
+            if (!response.isSuccessful) {
+                throw Exception("HTTP Error: ${response.code}") // Better error handling
+            }
+            response.body?.string() ?: throw Exception("Empty Response")
+        }
+    }
+
+
+
 
     fun fetchTrendingMovies() {
         viewModelScope.launch {

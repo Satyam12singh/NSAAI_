@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Email
@@ -33,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -171,171 +173,166 @@ fun ColumnItem(item: Types,navController: NavController) {
     }
 }
 
+//@Composable
+//fun DrawerContent(modifier: Modifier = Modifier,
+//                  viewModel: AuthViewModel,navController: NavController) {
+//
+//    val context= LocalContext.current
+//    Column(
+//        modifier = Modifier
+//
+//            .fillMaxHeight() // Occupy only height
+//            .width(300.dp) // Limit the drawer width
+//            .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+//            .background(MaterialTheme.colorScheme.surface.copy(0.5f))
+//            .padding(horizontal = 10.dp)
+//    ) {
+//        Column (modifier = Modifier.padding(vertical = 30.dp).fillMaxWidth(),
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.Center,
+//        ){
+//            Text("Chill With NSAAI!!",
+//                modifier= Modifier.padding(16.dp),
+//                textAlign = TextAlign.Center,
+//                fontFamily = Font(R.font.font).toFontFamily(),
+//                fontWeight = FontWeight.Bold,
+//                fontSize = 25.sp)
+//        }
+//
+//
+//        Spacer(modifier=Modifier.height(60.dp))
+//        HorizontalDivider(modifier= Modifier.padding(horizontal = 15.dp),
+//            color = MaterialTheme.colorScheme.onSurface.copy(0.5f))
+//        Spacer(modifier=Modifier.height(90.dp))
+//        NavigationDrawerItem(
+//            icon = { Icon(imageVector = Icons.Rounded.AccountCircle, contentDescription = null) },
+////            colors = NavigationDrawerItemDefaults.colors(MaterialTheme.colorScheme.onBackground),
+//            label = { Text("Account") },
+//            selected = false,
+//            onClick = {
+//                    Toast.makeText(context,"Coming Soon",Toast.LENGTH_SHORT).show()
+//            }
+//        )
+//        Spacer(modifier=Modifier.height(16.dp))
+//        NavigationDrawerItem(
+//            icon = { Icon(imageVector = Icons.Rounded.Notifications, contentDescription = null) },
+//            label = { Text("Notification") },
+//            selected = false,
+//            onClick = {
+//                navController.navigate(Screens.Notification.route)
+//            }
+//        )
+//        Spacer(modifier=Modifier.height(16.dp))
+//        NavigationDrawerItem(
+//            icon = { Icon(imageVector = Icons.Rounded.Email, contentDescription = null) },
+//            label = { Text("InBox") },
+//            selected = false,
+//            onClick = {
+//                Toast.makeText(context,"Coming Soon",Toast.LENGTH_SHORT).show()
+//            }
+//        )
+//        Spacer(modifier=Modifier.height(16.dp))
+//        NavigationDrawerItem(
+//            icon = { Icon(imageVector = Icons.Rounded.Logout, contentDescription = null) },
+//            label = { Text("LogOut") },
+//            selected = false,
+//            onClick = {
+//                viewModel.logout()
+//                navController.navigate("login") {
+//                    popUpTo("home") { inclusive = true }
+//                }
+//            }
+//        )
+//
+//    }
+//
+//
+//
+//}
+
+
 @Composable
-fun DrawerContent(modifier: Modifier = Modifier,
-                  viewModel: AuthViewModel,navController: NavController) {
+fun DrawerContent(
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel,
+    navController: NavController
+) {
+    val context = LocalContext.current
+    val selectedItem = remember { mutableStateOf("") } // To track the selected item
+
     Column(
         modifier = Modifier
-
             .fillMaxHeight() // Occupy only height
             .width(300.dp) // Limit the drawer width
             .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
             .background(MaterialTheme.colorScheme.surface.copy(0.5f))
             .padding(horizontal = 10.dp)
     ) {
-        Column (modifier = Modifier.padding(vertical = 30.dp).fillMaxWidth(),
+        Column(
+            modifier = Modifier
+                .padding(vertical = 30.dp)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-        ){
-            Text("Just Chill!!",
-                modifier= Modifier.padding(16.dp),
+        ) {
+            Text(
+                "Chill With NSAAI!!",
+                modifier = Modifier.padding(16.dp),
                 textAlign = TextAlign.Center,
-                fontSize = 24.sp)
+                fontFamily = Font(R.font.font).toFontFamily(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 25.sp
+            )
         }
 
-
-        Spacer(modifier=Modifier.height(60.dp))
-        HorizontalDivider(modifier= Modifier.padding(horizontal = 15.dp),
-            color = MaterialTheme.colorScheme.onSurface.copy(0.5f))
-        Spacer(modifier=Modifier.height(50.dp))
-        NavigationDrawerItem(
-            icon = { Icon(imageVector = Icons.Rounded.AccountCircle, contentDescription = null) },
-            label = { Text("Account") },
-            selected = false,
-            onClick = {
-
-            }
+        Spacer(modifier = Modifier.height(60.dp))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 15.dp),
+            color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
         )
-        Spacer(modifier=Modifier.height(16.dp))
-        NavigationDrawerItem(
-            icon = { Icon(imageVector = Icons.Rounded.Notifications, contentDescription = null) },
-            label = { Text("Notification") },
-            selected = false,
-            onClick = {
+        Spacer(modifier = Modifier.height(90.dp))
 
-            }
-        )
-        Spacer(modifier=Modifier.height(16.dp))
-        NavigationDrawerItem(
-            icon = { Icon(imageVector = Icons.Rounded.Email, contentDescription = null) },
-            label = { Text("InBox") },
-            selected = false,
-            onClick = {
-
-            }
-        )
-        Spacer(modifier=Modifier.height(16.dp))
-        NavigationDrawerItem(
-            icon = { Icon(imageVector = Icons.Rounded.Logout, contentDescription = null) },
-            label = { Text("LogOut") },
-            selected = false,
-            onClick = {
-                viewModel.logout()
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
-                }
-            }
+        val drawerItems = listOf(
+            Pair("Account", Icons.Rounded.AccountCircle),
+            Pair("Notification", Icons.Rounded.Notifications),
+            Pair("InBox", Icons.Rounded.Email),
+            Pair("LogOut", Icons.Rounded.Logout)
         )
 
+        drawerItems.forEach { (label, icon) ->
+            val isSelected = selectedItem.value == label
+            NavigationDrawerItem(
+                icon = { Icon(imageVector = icon, contentDescription = null) },
+                label = { Text(label) },
+                selected = isSelected,
+                colors = NavigationDrawerItemDefaults.colors(
+                    selectedContainerColor = if (isSelected) MaterialTheme.colorScheme.background
+                    else MaterialTheme.colorScheme.onBackground,
+                    selectedIconColor = if (isSelected) MaterialTheme.colorScheme.onBackground
+                        else MaterialTheme.colorScheme.background,
+                    selectedTextColor  = if (isSelected) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.background
+                ),
+                onClick = {
+                    selectedItem.value = label
+                    when (label) {
+                        "Account" -> Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show()
+                        "Notification" -> navController.navigate(Screens.Notification.route)
+                        "InBox" -> Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show()
+                        "LogOut" -> {
+                            viewModel.logout()
+                            navController.navigate("login") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .padding(vertical = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
-
-
-
 }
-
-
-//{
-//    item {
-//        Box(modifier=Modifier
-//            .height(150.dp)
-//            .fillMaxWidth()
-//            .clip(RoundedCornerShape(30.dp))
-//            .padding(horizontal = 30.dp)
-//            .background(MaterialTheme.colorScheme.background)
-//            .clickable {
-//                navController.navigate(Screens.Movie.route)
-//            }
-//        ) {
-//            Image(painter= painterResource(R.drawable.movies), contentDescription = null,
-//                modifier=Modifier.fillMaxSize().clip(RoundedCornerShape(50.dp)))
-//            Text("Movies",modifier=Modifier.padding(bottom = 8.dp).align(Alignment.BottomCenter),
-//                fontSize = 24.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = Font(R.font.font).toFontFamily(),
-//                color = Color.White
-//
-//            )
-//        }
-//    }
-//    item {
-//        Box(modifier=Modifier
-//            .height(150.dp)
-//            .fillMaxWidth()
-//            .clip(RoundedCornerShape(30.dp))
-//            .padding(horizontal = 30.dp)
-//            .background(MaterialTheme.colorScheme.background)
-//            .clickable {
-//                navController.navigate(Screens.Movie.route)
-//            }
-//        ) {
-//            Image(painter= rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500${firsttrendingmovie?.backdrop_path}"), contentDescription = null,
-//                modifier=Modifier.fillMaxSize().clip(RoundedCornerShape(50.dp)))
-//            Text("Trending Movies",modifier=Modifier.padding(bottom = 8.dp).align(Alignment.BottomCenter),
-//                fontSize = 24.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = Font(R.font.font).toFontFamily(),
-//                color = MaterialTheme.colorScheme.onSurface
-//            )
-//        }
-//    }
-//    item {
-//        Box(modifier=Modifier
-//            .height(150.dp)
-//            .fillMaxWidth()
-//            .clip(RoundedCornerShape(30.dp))
-//            .padding(horizontal = 30.dp)
-//            .background(MaterialTheme.colorScheme.background)
-//            .clickable {
-//                navController.navigate(Screens.Movie.route)
-//            }
-//        ) {
-//            Image(painter= rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500${firstpopulatmovie?.backdrop_path}"), contentDescription = null,
-//                modifier=Modifier.fillMaxSize().clip(RoundedCornerShape(50.dp)))
-//            Text("Popular Movies",modifier=Modifier.padding(bottom = 8.dp).align(Alignment.BottomCenter),
-//                fontSize = 24.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = Font(R.font.font).toFontFamily(),
-//                color = Color.White
-//
-//            )
-//        }
-//    }
-//
-////                Spacer(modifier=Modifier.height(30.dp))
-//    item {
-//        Box (
-//            modifier= Modifier
-//                .height(150.dp)
-//                .fillMaxWidth()
-//                .clip(RoundedCornerShape(30.dp))
-//                .background(MaterialTheme.colorScheme.background)
-//                .padding(horizontal = 30.dp)
-//                .clickable {
-//                    Toast.makeText(context,"Coming Soon",Toast.LENGTH_SHORT).show()
-//                }
-//        ){
-//            Image(painter= painterResource(R.drawable.tv_series), contentDescription = null,
-//                modifier=Modifier.fillMaxSize().clip(RoundedCornerShape(50.dp)))
-//            Text("Tv Series",
-//                modifier=Modifier.padding(bottom = 8.dp).align(Alignment.BottomCenter),
-//                fontSize = 24.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = Font(R.font.font).toFontFamily(),
-//                color = Color.White)
-//
-//        }
-//    }
-//
-//
-//
-//}

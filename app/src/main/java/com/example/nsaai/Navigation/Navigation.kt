@@ -58,6 +58,7 @@ import com.example.nsaai.Screens.HomeScreen
 import com.example.nsaai.Screens.MovieScreen
 import com.example.nsaai.Screens.PopularMovieScreen
 import com.example.nsaai.Screens.TrendingMovieScreen
+import com.example.nsaai.Screens.UpcomingMovieScreen
 import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.GenreViewModel
 
@@ -96,6 +97,9 @@ fun Navigation(
         }
         composable(Screens.TrendingMovies.route) {
             TrendingMovieScreen(viewModel=MovieViewModel(),navController=navController)
+        }
+        composable(Screens.Notification.route){
+            UpcomingMovieScreen(modifier=Modifier,viewModel=MovieViewModel(),navController=navController)
         }
         composable(Screens.AboutMovie.route,
             arguments= listOf(navArgument("id"){
