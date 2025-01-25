@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +57,11 @@ fun TrendingMovieScreen(
     navController: NavController,
     )
 {
+
+//    LaunchedEffect(Unit) {
+//        viewModel.fetchTrendingMovies()
+//    }
+
     val trendingmoviestate = viewModel.trendmoviestate.value
     val trendingMovieList = viewModel.alltrendingmovies.value
 
@@ -74,7 +80,7 @@ fun TrendingMovieScreen(
             onRefresh = {
                 coroutineScope.launch {
                     isRefreshing = true
-                    viewModel.fetchPopularMovies()
+                    viewModel.fetchTrendingMovies()
                     delay(3.seconds)
                     isRefreshing = false
                 }

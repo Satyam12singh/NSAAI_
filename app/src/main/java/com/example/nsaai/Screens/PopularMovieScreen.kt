@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,7 +53,13 @@ fun PopularMovieScreen(
     modifier: Modifier = Modifier,
     viewModel: MovieViewModel,
     navController: NavController,
+
+
 ) {
+//    LaunchedEffect(Unit) {
+//        viewModel.fetchPopularMovies()
+//    }
+
     val popularMovieState = viewModel.popularmoviestate.value
     val popularMoviesList = viewModel.allpopmovies.value
 

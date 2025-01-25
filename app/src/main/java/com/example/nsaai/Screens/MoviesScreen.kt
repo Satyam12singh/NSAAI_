@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,11 +71,16 @@ fun MovieScreen(
     viewModel: MovieViewModel, modifier: Modifier = Modifier, navController: NavController,
     viewmodel: GenreViewModel
 ) {
+//    LaunchedEffect (Unit){
+//        viewmodel.fetchGenre()
+//        viewModel.fetchMovies()
+//    }
     val state = viewModel.moviestate.value
     val genreState = viewmodel.genrestate.value
     val scrollState = rememberScrollState()
     var fontifoverflow = 14.sp
     val context= LocalContext.current
+
 
 
     var isRefreshing by remember { mutableStateOf(false) }
@@ -120,9 +126,8 @@ fun MovieScreen(
             ) {
                 if (genreState.loading) {
 //                Text("Loading genre...")
-                    CircularProgressIndicator(color = Color.White,
-                        strokeWidth = 4.dp,
-                        trackColor = Color.Blue)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 4.dp)
                 } else {
 
 
