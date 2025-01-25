@@ -13,6 +13,7 @@ val homescreenitems= listOf(
     Types("Movies", R.drawable.img_2),
     Types("Popular",R.drawable.img),
     Types("Trending",R.drawable.img_1),
+    Types("Pokemon",R.drawable.img_4),
     Types("Tv Series",R.drawable.img_3)
 
 

@@ -41,12 +41,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.nsaai.Authentication.GoogleAuth
 import com.example.nsaai.Navigation.Screens
 import com.example.nsaai.R
 import com.example.nsaai.ViewModels.AuthState
 import com.example.nsaai.ViewModels.AuthViewModel
 import com.example.nsaai.signinOptions
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -308,41 +312,86 @@ fun SignUpScreen(navController: NavController,
                         Divider(modifier = Modifier.height(1.dp), color = MaterialTheme.colorScheme.background)
 
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp)
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            signinOptions.forEach { item ->
-                                Box(
-                                    modifier = Modifier
-                                        .height(30.dp)
-                                        .width(30.dp)
-                                        .clickable(
-                                            onClick = {
-                                                Log.d(
-                                                    "SignUpScreen",
-                                                    "Button clicked: ${item.title}"
-                                                )
-                                            },
-                                            indication = rememberRipple(bounded = true), // Add ripple effect
-                                            interactionSource = remember { MutableInteractionSource() }
-                                        )
-                                        .clip(CircleShape)
-                                        .background(Color.White)
-                                        ,
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = item.icon),
-                                        contentDescription = item.title,
-                                        modifier = Modifier.width(60.dp)
-                                    )
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(20.dp)
+//                                .padding(horizontal = 16.dp),
+//                            horizontalArrangement = Arrangement.SpaceEvenly,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            signinOptions.forEach { item ->
+//                                Box(
+//                                    modifier = Modifier
+//                                        .height(30.dp)
+//                                        .width(30.dp)
+//                                        .clickable(
+//                                            onClick = {
+//                                                Log.d(
+//                                                    "SignUpScreen",
+//                                                    "Button clicked: ${item.title}"
+//                                                )
+//                                            },
+//                                            indication = rememberRipple(bounded = true), // Add ripple effect
+//                                            interactionSource = remember { MutableInteractionSource() }
+//                                        )
+//                                        .clip(CircleShape)
+//                                        .background(Color.White)
+//                                        ,
+//                                    contentAlignment = Alignment.Center
+//                                ) {
+//                                    Image(
+//                                        painter = painterResource(id = item.icon),
+//                                        contentDescription = item.title,
+//                                        modifier = Modifier.width(60.dp)
+//                                    )
+//                                }
+//                            }
+//                        }
+                        IconButton(
+                            modifier=Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 40.dp, vertical = 10.dp)
+                                .clip(RoundedCornerShape(100.dp))
+                                .background(MaterialTheme.colorScheme.background),
+                            onClick = {
+                                val googleauth= GoogleAuth(context)
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    val isSignedIn = googleauth.signIn()
+                                    if (isSignedIn) {
+//                                        Toast.makeText(context, "Google Sign-In Successful", Toast.LENGTH_SHORT).show()
+                                        navController.navigate(Screens.Home.route) {
+                                            popUpTo(Screens.LoginScreen.route) { inclusive = true }
+                                        }
+                                    } else {
+//                                        Toast.makeText(context, "Google Sign-In Failed", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
+
+//                                Toast.makeText(context, "Google Auth Button Has been Clicked", Toast.LENGTH_SHORT).show()
                             }
+                        ) {
+                            Row(
+                                modifier= Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 10.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(painter = painterResource(id = R.drawable.googleicon60), contentDescription = "Google Auth Button",
+                                    modifier=Modifier
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.onBackground)
+                                )
+                                Text("Sign in with Google",
+                                    modifier=Modifier.padding(start = 10.dp),
+                                    fontSize = 16.sp,
+                                    fontFamily = Font(R.font.font).toFontFamily(),
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+
                         }
 
 

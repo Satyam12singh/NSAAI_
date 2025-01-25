@@ -61,6 +61,7 @@ import com.example.nsaai.HomeScreenContent.homescreenitems
 import com.example.nsaai.Navigation.Screens
 import com.example.nsaai.R
 import com.example.nsaai.ViewModels.AuthViewModel
+import com.google.android.play.integrity.internal.n
 import kotlinx.coroutines.launch
 
 
@@ -98,6 +99,7 @@ fun HomeScreen(
             }
         ) { paddingValues ->
             LazyColumn(
+
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)

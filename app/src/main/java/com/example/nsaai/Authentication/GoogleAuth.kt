@@ -1,79 +1,65 @@
-//package com.example.nsaai.Authentication
-//
+package com.example.nsaai.Authentication
+
 //import android.content.Context
 //import android.content.Intent
 //import android.content.IntentSender
 //import com.example.nsaai.R
 //import com.google.android.gms.auth.api.identity.BeginSignInRequest
-//import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 //import com.google.android.gms.auth.api.identity.SignInClient
-//import com.google.firebase.Firebase
 //import com.google.firebase.auth.GoogleAuthProvider
-//import com.google.firebase.auth.auth
+//import com.google.firebase.auth.FirebaseAuth
 //import kotlinx.coroutines.tasks.await
 //import java.util.concurrent.CancellationException
 //
-//class GoogleAuth (
-//    private val context:Context,
+//class GoogleAuth(
+//    private val context: Context,
 //    private val oneTapClient: SignInClient,
-//    private val signInRequest: BeginSignInRequest,
-//    private val signUpRequest: BeginSignInRequest
+//    private val signInRequest: BeginSignInRequest
 //) {
-//    private val auth = Firebase.auth
+//    private val auth = FirebaseAuth.getInstance()
 //
-//    suspend fun signIn():IntentSender? {
+//    suspend fun signIn(): IntentSender? {
 //        val result = try {
-//            oneTapClient.beginSignIn(
-//                buildSignInRequest()
-//            ).await()
+//            oneTapClient.beginSignIn(signInRequest).await()
 //        } catch (e: Exception) {
 //            e.printStackTrace()
-//            if(e is CancellationException) throw e
+//            if (e is CancellationException) throw e
 //            null
-//
 //        }
 //        return result?.pendingIntent?.intentSender
-//
 //    }
 //
-//    suspend fun SignInWithIntent(intent: Intent): SignInResult{
+//    suspend fun signInWithIntent(intent: Intent): SignInResult {
 //        val credential = oneTapClient.getSignInCredentialFromIntent(intent)
 //        val googleIdToken = credential.googleIdToken
 //        val googleCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
 //
 //        return try {
-//
 //            val user = auth.signInWithCredential(googleCredential).await().user
 //            SignInResult(
-//                data = user?.run {
+//                data = user?.let {
 //                    UserData(
-//                        userId = uid,
-//                        username = displayName.toString(),
-//                        profilePictureUrl = photoUrl.toString()
+//                        userId = it.uid,
+//                        username = it.displayName.toString(),
+//                        profilePictureUrl = it.photoUrl.toString()
 //                    )
 //                },
 //                errorMessage = null
 //            )
-//
-//        }catch (e : Exception){
+//        } catch (e: Exception) {
 //            e.printStackTrace()
-//            if(e is CancellationException) throw e
-//            SignInResult(
-//                data = null,
-//                errorMessage = e.message
-//            )
+//            if (e is CancellationException) throw e
+//            SignInResult(data = null, errorMessage = e.message)
 //        }
 //    }
 //
-//
-//    suspend fun SignOut(){
+//    suspend fun signOut() {
 //        try {
 //            oneTapClient.signOut().await()
 //            auth.signOut()
-//
-//        }catch (e : Exception){
+//        } catch (e: Exception) {
 //            e.printStackTrace()
-//            if ( e is CancellationException) throw e
+//            if (e is CancellationException) throw e
 //        }
 //    }
 //
@@ -84,92 +70,117 @@
 //            profilePictureUrl = photoUrl.toString()
 //        )
 //    }
-//
-//    private fun buildSignInRequest():BeginSignInRequest{
-//        return BeginSignInRequest.Builder()
-//            .setGoogleIdTokenRequestOptions(
-//                GoogleIdTokenRequestOptions.builder()
-//                    .setSupported(true)
-//                    .setFilterByAuthorizedAccounts(false)
-//                    .setServerClientId(context.getString(R.string.default_web_client_id))
-//                    .build()
-//            )
-//            .setAutoSelectEnabled(true)
-//            .build()
-//    }
-//
 //}
 
-package com.example.nsaai.Authentication
-
 import android.content.Context
-import android.content.Intent
-import android.content.IntentSender
-import com.example.nsaai.R
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.firebase.auth.GoogleAuthProvider
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import com.example.nsaai.BuildConfig
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
-import java.util.concurrent.CancellationException
+import kotlin.coroutines.cancellation.CancellationException
+
 
 class GoogleAuth(
     private val context: Context,
-    private val oneTapClient: SignInClient,
-    private val signInRequest: BeginSignInRequest
 ) {
-    private val auth = FirebaseAuth.getInstance()
 
-    suspend fun signIn(): IntentSender? {
-        val result = try {
-            oneTapClient.beginSignIn(signInRequest).await()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            if (e is CancellationException) throw e
-            null
+    private val tag = "GoogleAuthClient: "
+
+    private val credentialManager = CredentialManager.create(context)
+    private val firebaseAuth = FirebaseAuth.getInstance()
+
+    fun isSingedIn(): Boolean {
+        if (firebaseAuth.currentUser != null) {
+            println(tag + "already signed in")
+            return true
         }
-        return result?.pendingIntent?.intentSender
+
+        return false
     }
 
-    suspend fun signInWithIntent(intent: Intent): SignInResult {
-        val credential = oneTapClient.getSignInCredentialFromIntent(intent)
-        val googleIdToken = credential.googleIdToken
-        val googleCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+    suspend fun signIn(): Boolean {
+        if (isSingedIn()) {
+            return true
+        }
 
-        return try {
-            val user = auth.signInWithCredential(googleCredential).await().user
-            SignInResult(
-                data = user?.let {
-                    UserData(
-                        userId = it.uid,
-                        username = it.displayName.toString(),
-                        profilePictureUrl = it.photoUrl.toString()
-                    )
-                },
-                errorMessage = null
-            )
+        try {
+            val result = buildCredentialRequest()
+            return handleSingIn(result)
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
-            SignInResult(data = null, errorMessage = e.message)
+
+            println(tag + "sinIn error: ${e.message}")
+            return false
         }
+    }
+
+    private suspend fun handleSingIn(result: GetCredentialResponse): Boolean {
+        val credential = result.credential
+
+        if (
+            credential is CustomCredential &&
+            credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+        ) {
+
+            try {
+
+                val tokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+
+                println(tag + "name: ${tokenCredential.displayName}")
+                println(tag + "email: ${tokenCredential.id}")
+                println(tag + "image: ${tokenCredential.profilePictureUri}")
+
+                val authCredential = GoogleAuthProvider.getCredential(
+                    tokenCredential.idToken, null
+                )
+                val authResult = firebaseAuth.signInWithCredential(authCredential).await()
+
+                return authResult.user != null
+
+            } catch (e: GoogleIdTokenParsingException) {
+                println(tag + "GoogleIdTokenParsingException: ${e.message}")
+                return false
+            }
+
+        } else {
+            println(tag + "credential is not GoogleIdTokenCredential")
+            return false
+        }
+
+    }
+    val clientid= BuildConfig.googleclientid
+    private suspend fun buildCredentialRequest(): GetCredentialResponse {
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(
+                GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(
+                        clientid
+                    )
+                    .setAutoSelectEnabled(false)
+                    .build()
+            )
+            .build()
+
+        return credentialManager.getCredential(
+            request = request, context = context
+        )
     }
 
     suspend fun signOut() {
-        try {
-            oneTapClient.signOut().await()
-            auth.signOut()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            if (e is CancellationException) throw e
-        }
+        credentialManager.clearCredentialState(
+            ClearCredentialStateRequest()
+        )
+        firebaseAuth.signOut()
     }
 
-    fun getSignedInUser(): UserData? = auth.currentUser?.run {
-        UserData(
-            userId = uid,
-            username = displayName.toString(),
-            profilePictureUrl = photoUrl.toString()
-        )
-    }
 }

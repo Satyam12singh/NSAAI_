@@ -38,10 +38,12 @@ android {
             )
             buildConfigField("String", "API_KEY", "\"${localProperties.getProperty("API_KEY")}\"")
             buildConfigField("String", "api_key_normal", "\"${localProperties.getProperty("api_key_normal")}\"")
+            buildConfigField("String", "googleclientid", "\"${localProperties.getProperty("googleclientid")}\"")
         }
         debug {
             buildConfigField("String", "API_KEY", "\"${localProperties.getProperty("API_KEY")}\"")
             buildConfigField("String", "api_key_normal", "\"${localProperties.getProperty("api_key_normal")}\"")
+            buildConfigField("String", "googleclientid", "\"${localProperties.getProperty("googleclientid")}\"")
         }
     }
 
@@ -84,6 +86,7 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.6.0-alpha08")
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.0-alpha08")
     implementation("androidx.compose.material:material:1.6.0-alpha08")
+    implementation(libs.googleid)
 
     val voyagerversion="1.0.0"
     implementation("cafe.adriel.voyager:voyager-navigator:$voyagerversion")
