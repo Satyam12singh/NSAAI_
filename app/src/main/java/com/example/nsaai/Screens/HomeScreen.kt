@@ -318,7 +318,7 @@ fun DrawerContent(
                     when (label) {
                         "Account" -> Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show()
                         "Notification" -> navController.navigate(Screens.Notification.route)
-                        "InBox" -> Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show()
+                        "InBox" -> navController.navigate(Screens.WatchList.route)
                         "LogOut" -> {
                             viewModel.logout()
                             navController.navigate("login") {

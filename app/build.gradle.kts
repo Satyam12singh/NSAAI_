@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    id("kotlin-kapt")
 }
 
 android {
@@ -61,6 +62,12 @@ android {
 }
 
 dependencies {
+
+    implementation("androidx.room:room-runtime:2.5.2") // Replace with the latest version
+    kapt("androidx.room:room-compiler:2.5.2") // For annotation processing
+
+    // Optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:2.5.2")
 
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.2-alpha")
 

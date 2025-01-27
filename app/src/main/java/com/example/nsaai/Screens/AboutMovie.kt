@@ -2,6 +2,7 @@ package com.example.nsaai.Screens
 
 import android.content.res.Configuration
 import android.util.Log
+import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,15 +34,19 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.BrokenImage
+import androidx.compose.material.icons.rounded.Favorite
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +71,8 @@ import com.example.nsaai.R
 
 import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
+import com.example.nsaai.ViewModels.WatchListViewModel
+import com.example.nsaai.dataofwatchlist.WatchList
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -78,6 +85,7 @@ import kotlin.math.min
 fun AboutMovie(modifier: Modifier = Modifier,
                viewmodel: AboutMovieViewModel,
                viewModel: MovieViewModel,
+               viewmodelwatchlist:WatchListViewModel,
                id:Int
 
 ) {
@@ -229,7 +237,7 @@ fun AboutMovie(modifier: Modifier = Modifier,
 
                 1 -> {
 
-                        AboutTheMovie(title = title, adult = adult, original_language = original_language, overview = overview, release_date = release_date, vote_average = vote_average, poster_path = poster_path,cast=cast)
+                        AboutTheMovie(id=id,title = title, adult = adult, original_language = original_language, overview = overview, release_date = release_date, vote_average = vote_average, poster_path = poster_path,cast=cast,viewmodel=viewmodelwatchlist)
 
                     }
                 2 -> {
@@ -316,9 +324,18 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                    overview:String,
                    release_date:String,
                   poster_path:String?=null,
-                    cast:List<Cast>
+                    cast:List<Cast>,
+                  viewmodel:WatchListViewModel,
+                  id: Int
                   )
 {
+
+//    val allmoviesinwatchlist= viewmodel.getAllListedMovies
+    val allMoviesInWatchlist by viewmodel.getAllListedMovies.collectAsState(initial = emptyList())
+
+    // Check if the current movie is already in the watchlist
+    val isFavorite = allMoviesInWatchlist.any { it.movie_id.toInt() == id }
+
     Column(
         modifier= Modifier
             .fillMaxSize()
@@ -338,7 +355,7 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
             color = MaterialTheme.colorScheme.onBackground
 
         )
-        Spacer(modifier=Modifier.height(50.dp))
+        Spacer(modifier=Modifier.height(40.dp))
         Row(
             modifier= Modifier
                 .fillMaxWidth()
@@ -353,8 +370,6 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Adult: ",
-                        modifier= Modifier
-                            .padding(start = 8.dp),
                         fontFamily = Font(R.font.font).toFontFamily(),
                         fontSize = 24.sp,
                         fontWeight = Bold,
@@ -380,7 +395,7 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                 }
                 Spacer(modifier=Modifier.height(8.dp))
                 Text("Release Date: $release_date",
-                    modifier=Modifier.padding(start = 8.dp),
+
                     fontFamily = Font(R.font.font).toFontFamily(),
                     fontWeight = Bold,
                     fontSize = 24.sp,
@@ -388,7 +403,7 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                     )
                 Spacer(modifier=Modifier.height(8.dp))
                 Text("Language: $original_language",
-                    modifier=Modifier.padding(start = 8.dp),
+
                     fontFamily = Font(R.font.font).toFontFamily(),
                     fontWeight = Bold,
                     fontSize = 24.sp,
@@ -403,9 +418,40 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
 
         }
 
-        Spacer(modifier=Modifier.height(60.dp))
+        IconButton(
+            modifier=Modifier.padding(24.dp)
+                .size(20.dp)
+                .clip(RoundedCornerShape(5.dp))
+                .background(MaterialTheme.colorScheme.onBackground)
+            ,
+            onClick = {
+                if (!isFavorite) {
+                    // Add the movie to the watchlist
+                    viewmodel.addAMovie(
+                        WatchList(
+                            movie_id = id,
+                            isSelected = true,
+                        )
+                    )
+                }
+                else{
+                    viewmodel.deleteAMovie(
+                        WatchList(
+                            movie_id = id,
+                            isSelected = false,
+                        )
+                    )
+                }
+
+            }
+        ){
+            Icon(Icons.Rounded.Favorite, contentDescription = null, tint = if(isFavorite) Color.Red else MaterialTheme.colorScheme.background)
+        }
+
+        Spacer(modifier=Modifier.height(40.dp))
         val scrollState = rememberScrollState()
         Column(modifier= Modifier.verticalScroll(scrollState)
+            .padding(horizontal = 8.dp)
         ) {
             Text(
             "${overview}",
@@ -480,99 +526,99 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
 
 
 
-@Preview(showBackground = true)
-@Composable
-private fun AboutthemoviePreview() {
-    AboutTheMovie(title = "hello This is the title of the movie", adult = false, original_language = "English", overview = "Mufasa, a cub lost and alone, meets a sympathetic lion named Taka, the heir to a royal bloodline. The chance meeting sets in motion an expansive journey of a group of misfits searching for their destiny", release_date = "2023", vote_average = 8.0
-    , poster_path = "/jbOSUAWMGzGL1L4EaUF8K6zYFo7.jpg",
-        cast = listOf(
-            Cast(
-                adult = false,
-                gender = 2,
-                id = 1763709,
-                known_for_department = "Acting",
-                name = "Aaron Pierre",
-                original_name = "Aaron Pierre",
-                popularity = 104.416,
-                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
-                cast_id = 73,
-                character = "Mufasa (voice)",
-                credit_id = "6784ce60bd793c03544ec5ff",
-                order = 0
-            ),
-            Cast(
-                adult = false,
-                gender = 2,
-                id = 1763709,
-                known_for_department = "Acting",
-                name = "Aaron Pierre",
-                original_name = "Aaron Pierre",
-                popularity = 104.416,
-                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
-                cast_id = 73,
-                character = "Mufasa (voice)",
-                credit_id = "6784ce60bd793c03544ec5ff",
-                order = 0
-            ),
-            Cast(
-                adult = false,
-                gender = 2,
-                id = 1763709,
-                known_for_department = "Acting",
-                name = "Aaron Pierre",
-                original_name = "Aaron Pierre",
-                popularity = 104.416,
-                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
-                cast_id = 73,
-                character = "Mufasa (voice)",
-                credit_id = "6784ce60bd793c03544ec5ff",
-                order = 0
-            ),
-            Cast(
-                adult = false,
-                gender = 2,
-                id = 1763709,
-                known_for_department = "Acting",
-                name = "Aaron Pierre",
-                original_name = "Aaron Pierre",
-                popularity = 104.416,
-                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
-                cast_id = 73,
-                character = "Mufasa (voice)",
-                credit_id = "6784ce60bd793c03544ec5ff",
-                order = 0
-            ),
-            Cast(
-                adult = false,
-                gender = 2,
-                id = 1763709,
-                known_for_department = "Acting",
-                name = "Aaron Pierre",
-                original_name = "Aaron Pierre",
-                popularity = 104.416,
-                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
-                cast_id = 73,
-                character = "Mufasa (voice)",
-                credit_id = "6784ce60bd793c03544ec5ff",
-                order = 0
-            ),
-            Cast(
-                adult = false,
-                gender = 2,
-                id = 1763709,
-                known_for_department = "Acting",
-                name = "Aaron Pierre",
-                original_name = "Aaron Pierre",
-                popularity = 104.416,
-                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
-                cast_id = 73,
-                character = "Mufasa (voice)",
-                credit_id = "6784ce60bd793c03544ec5ff",
-                order = 0
-            )
-        ))
-
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun AboutthemoviePreview() {
+//    AboutTheMovie(title = "hello This is the title of the movie", adult = false, original_language = "English", overview = "Mufasa, a cub lost and alone, meets a sympathetic lion named Taka, the heir to a royal bloodline. The chance meeting sets in motion an expansive journey of a group of misfits searching for their destiny", release_date = "2023", vote_average = 8.0
+//    , poster_path = "/jbOSUAWMGzGL1L4EaUF8K6zYFo7.jpg",
+//        cast = listOf(
+//            Cast(
+//                adult = false,
+//                gender = 2,
+//                id = 1763709,
+//                known_for_department = "Acting",
+//                name = "Aaron Pierre",
+//                original_name = "Aaron Pierre",
+//                popularity = 104.416,
+//                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+//                cast_id = 73,
+//                character = "Mufasa (voice)",
+//                credit_id = "6784ce60bd793c03544ec5ff",
+//                order = 0
+//            ),
+//            Cast(
+//                adult = false,
+//                gender = 2,
+//                id = 1763709,
+//                known_for_department = "Acting",
+//                name = "Aaron Pierre",
+//                original_name = "Aaron Pierre",
+//                popularity = 104.416,
+//                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+//                cast_id = 73,
+//                character = "Mufasa (voice)",
+//                credit_id = "6784ce60bd793c03544ec5ff",
+//                order = 0
+//            ),
+//            Cast(
+//                adult = false,
+//                gender = 2,
+//                id = 1763709,
+//                known_for_department = "Acting",
+//                name = "Aaron Pierre",
+//                original_name = "Aaron Pierre",
+//                popularity = 104.416,
+//                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+//                cast_id = 73,
+//                character = "Mufasa (voice)",
+//                credit_id = "6784ce60bd793c03544ec5ff",
+//                order = 0
+//            ),
+//            Cast(
+//                adult = false,
+//                gender = 2,
+//                id = 1763709,
+//                known_for_department = "Acting",
+//                name = "Aaron Pierre",
+//                original_name = "Aaron Pierre",
+//                popularity = 104.416,
+//                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+//                cast_id = 73,
+//                character = "Mufasa (voice)",
+//                credit_id = "6784ce60bd793c03544ec5ff",
+//                order = 0
+//            ),
+//            Cast(
+//                adult = false,
+//                gender = 2,
+//                id = 1763709,
+//                known_for_department = "Acting",
+//                name = "Aaron Pierre",
+//                original_name = "Aaron Pierre",
+//                popularity = 104.416,
+//                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+//                cast_id = 73,
+//                character = "Mufasa (voice)",
+//                credit_id = "6784ce60bd793c03544ec5ff",
+//                order = 0
+//            ),
+//            Cast(
+//                adult = false,
+//                gender = 2,
+//                id = 1763709,
+//                known_for_department = "Acting",
+//                name = "Aaron Pierre",
+//                original_name = "Aaron Pierre",
+//                popularity = 104.416,
+//                profile_path = "/hNwZWdT2KxKj1YLbipvtUhNjfAp.jpg",
+//                cast_id = 73,
+//                character = "Mufasa (voice)",
+//                credit_id = "6784ce60bd793c03544ec5ff",
+//                order = 0
+//            )
+//        ))
+//
+//}
 
 
 @Composable
