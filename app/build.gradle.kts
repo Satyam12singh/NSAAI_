@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
     id("kotlin-kapt")
+
 }
 
 android {
@@ -62,6 +63,20 @@ android {
 }
 
 dependencies {
+
+    // Hilt Core
+    implementation("com.google.dagger:hilt-android:2.48")
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore.ktx)
+    implementation("com.google.firebase:firebase-firestore-ktx:24.0.0")
+    kapt("com.google.dagger:hilt-compiler:2.48")
+    implementation("com.google.firebase:firebase-database:21.0.0")
+// Hilt Compose integration
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
+
+// Optional for ViewModel and Lifecycle support
+    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
+    kapt("androidx.hilt:hilt-compiler:1.0.0")
 
     implementation("androidx.room:room-runtime:2.5.2") // Replace with the latest version
     kapt("androidx.room:room-compiler:2.5.2") // For annotation processing

@@ -14,9 +14,14 @@ import com.example.nsaai.TrailerFromApi.Trailer
 import com.example.nsaai.datafromapi.ExternalIds
 import com.example.nsaai.datafromapi.MovieResultExternalId
 import com.example.nsaai.datafromapi.MovieResultX
+
+import com.google.android.play.integrity.internal.f
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,9 +29,11 @@ import kotlinx.coroutines.withContext
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import javax.inject.Inject
 
 
-class AboutMovieViewModel : ViewModel() {
+class AboutMovieViewModel : ViewModel()
+{
 
     private val _posterPath = mutableStateOf("")
     val posterPath = _posterPath
@@ -86,6 +93,7 @@ class AboutMovieViewModel : ViewModel() {
                 if (movieResult != null) {
                     _posterPath.value = movieResult.poster_path ?: "No poster available"
                     _imageofmovie.value = movieResult.backdrop_path ?: ""
+                    _title.value = movieResult.title
                 }
             } catch (e: Exception) {
                 Log.e("fetchAboutTheMovie", "Error: ${e.message}")
@@ -214,4 +222,23 @@ class AboutMovieViewModel : ViewModel() {
             response.body?.string() ?: throw Exception("Empty Response")
         }
     }
+
+//    fun isMovieInDatabase(movieId: Int): Flow<Boolean> =
+//        repository.getMovieById(movieId).map { it != null }
+//
+//
+//    fun storeMovieToDatabase(movieId: Int) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            repository.addAMovie(WatchList(movie_id = movieId))
+//        }
+//    }
+//
+//    fun deleteMovieFromDatabase(movieId: Int) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            repository.deleteAMovie(WatchList(movie_id = movieId))
+//        }
+//    }
+
+
+
 }

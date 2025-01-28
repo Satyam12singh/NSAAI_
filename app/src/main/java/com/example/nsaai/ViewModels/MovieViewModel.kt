@@ -22,6 +22,7 @@ import okhttp3.Response
 
 class MovieViewModel : ViewModel() {
 
+    private var currentBatchStart = 1 // Tracks the start page of the current batch
 
 
     private val apiKey =  BuildConfig.API_KEY
@@ -66,9 +67,8 @@ class MovieViewModel : ViewModel() {
     fun fetchUpcomingMovie() {
         viewModelScope.launch {
             try {
-//                val allUpcomingMovies = mutableListOf<MovieResult>()
-                for (page in 1..10) { // Fetch all 10 pages
-                    val response = fetchAllMovies(page)
+                for (page in 1..15) {
+                    val response = fetchAllUpcomingMovie(page)
                     val UpcomingmovieData = Gson().fromJson(response, MovieData::class.java)
                     _allUpcomingMovies.addAll(UpcomingmovieData.results)
                 }
@@ -203,7 +203,7 @@ class MovieViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val allMovies = mutableListOf<MovieResult>()
-                for (page in 1..10) { // Fetch all 10 pages
+                for (page in 1..20) { // Fetch all 10 pages
                     val response = fetchAllMovies(page)
                     val movieData = Gson().fromJson(response, MovieData::class.java)
                     allMovies.addAll(movieData.results)

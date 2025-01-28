@@ -48,12 +48,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Black
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.toFontFamily
@@ -71,9 +75,13 @@ import com.example.nsaai.R
 
 import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
-import com.example.nsaai.ViewModels.WatchListViewModel
-import com.example.nsaai.dataofwatchlist.WatchList
+//import com.example.nsaai.dataofwatchlist.WatchList
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -85,7 +93,6 @@ import kotlin.math.min
 fun AboutMovie(modifier: Modifier = Modifier,
                viewmodel: AboutMovieViewModel,
                viewModel: MovieViewModel,
-               viewmodelwatchlist:WatchListViewModel,
                id:Int
 
 ) {
@@ -237,7 +244,17 @@ fun AboutMovie(modifier: Modifier = Modifier,
 
                 1 -> {
 
-                        AboutTheMovie(id=id,title = title, adult = adult, original_language = original_language, overview = overview, release_date = release_date, vote_average = vote_average, poster_path = poster_path,cast=cast,viewmodel=viewmodelwatchlist)
+                        AboutTheMovie(id=id,
+                            title = title,
+                            adult = adult,
+                            original_language = original_language,
+                            overview = overview,
+                            release_date = release_date,
+                            vote_average = vote_average,
+                            poster_path = poster_path,
+                            cast=cast,
+//                            viewmodel=viewmodel
+                        )
 
                     }
                 2 -> {
@@ -314,53 +331,436 @@ fun CircularRatingProgressBar(rating: Float) {
     }
 }
 
+//@Composable
+//fun AboutTheMovie(
+//    modifier: Modifier = Modifier,
+//    title: String,
+//    adult: Boolean,
+//    original_language: String,
+//    vote_average: Double,
+//    overview: String,
+//    release_date: String,
+//    poster_path: String? = null,
+//    cast: List<Cast>,
+//    id: Int
+//) {
+//
+//    val auth = FirebaseAuth.getInstance()
+//    val firestore = FirebaseFirestore.getInstance()
+//
+//    // State to track if the movie is a favorite
+//    val isFavorite = remember { mutableStateOf(false) }
+//
+//    // Get the current user from Firebase Authentication
+//    val currentUser = auth.currentUser
+//
+//    fun createUserDocument(userId: String) {
+//        val userRef = firestore.collection("users").document(userId)
+//
+//        // Check if the document exists and create a new one if it doesn't
+//        userRef.get().addOnSuccessListener { document ->
+//            if (!document.exists()) {
+//                val userData = mapOf(
+//                    "favoriteMovies" to listOf<Long>() // Start with an empty list for favorites
+//                )
+//
+//                userRef.set(userData)
+//                    .addOnSuccessListener {
+//                        Log.d("Firestore", "User document created successfully.")
+//                    }
+//                    .addOnFailureListener { e ->
+//                        Log.e("Firestore", "Error creating user document", e)
+//                    }
+//            }
+//        }
+//    }
+//
+//    // Function to toggle the favorite movie in Firestore
+//    fun toggleFavorite() {
+//        currentUser?.let { user ->
+//            // Reference to the user's document in Firestore
+//            val userRef = firestore.collection("users").document(user.uid)
+//
+//            // Get the user's document from Firestore
+//            userRef.get().addOnSuccessListener { document ->
+//                if (document.exists()) {
+//                    // User exists, toggle the favorite movie
+//                    val movieIds = document.get("favoriteMovies") as? List<Long> ?: listOf()
+//
+//                    if (movieIds.contains(id.toLong())) {
+//                        // If the movie is already in the list, remove it
+//                        userRef.update("favoriteMovies", FieldValue.arrayRemove(id.toLong()))
+//                    } else {
+//                        // If the movie is not in the list, add it
+//                        userRef.update("favoriteMovies", FieldValue.arrayUnion(id.toLong()))
+//                    }
+//                } else {
+//                    createUserDocument(user.uid)
+//                    // User document does not exist, create a new document with the movie as a favorite
+//                    val userData = mapOf(
+//                        "favoriteMovies" to listOf(id.toLong()) // Start with the current movie as the first favorite
+//                    )
+//                    userRef.set(userData)
+//                        .addOnSuccessListener {
+//                            // Optionally handle success (like showing a success message)
+//                        }
+//                        .addOnFailureListener {
+//                            // Optionally handle failure (like showing an error message)
+//                        }
+//                }
+//            }
+//        }
+//    }
+//
+//    // Function to check if the movie is in the user's favorites in Firestore
+//    fun checkIfMovieIsInDatabase() {
+//        currentUser?.let { user ->
+//            val userRef = firestore.collection("users").document(user.uid)
+//            userRef.get().addOnSuccessListener { document ->
+//                if (document.exists()) {
+//                    val movieIds = document.get("favoriteMovies") as? List<Long> ?: listOf()
+//                    isFavorite.value = movieIds.contains(id.toLong())
+//                }
+//            }
+//        }
+//    }
+//
+//    // Trigger the check when the composable is first loaded
+//    LaunchedEffect(Unit) {
+//        checkIfMovieIsInDatabase()
+//    }
+//
+//    // UI layout for the movie details
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(horizontal = 10.dp)
+//            .padding(top = 8.dp),
+//        horizontalAlignment = Alignment.Start
+//    ) {
+//
+//        Text(
+//            text = title,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(8.dp),
+//            fontFamily = Font(R.font.font).toFontFamily(),
+//            fontSize = 35.sp,
+//            fontWeight = FontWeight.Bold,
+//            maxLines = 2,
+//            color = MaterialTheme.colorScheme.onBackground
+//        )
+//
+//        Spacer(modifier = Modifier.height(40.dp))
+//
+//        // Row for additional movie information (e.g., adult rating, release date, language)
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(8.dp),
+//            horizontalArrangement = Arrangement.SpaceBetween,
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Column(
+//                horizontalAlignment = Alignment.Start,
+//            ) {
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = "Adult: ",
+//                        fontFamily = Font(R.font.font).toFontFamily(),
+//                        fontSize = 24.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        maxLines = 2,
+//                        color = MaterialTheme.colorScheme.onBackground
+//                    )
+//                    Text(
+//                        text = if (adult) "Yes" else "No",
+//                        fontFamily = Font(R.font.font).toFontFamily(),
+//                        fontSize = 24.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        color = MaterialTheme.colorScheme.onBackground
+//                    )
+//                }
+//
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Text(
+//                    text = "Release Date: $release_date",
+//                    fontFamily = Font(R.font.font).toFontFamily(),
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 24.sp,
+//                    color = MaterialTheme.colorScheme.onBackground
+//                )
+//
+//                Spacer(modifier = Modifier.height(8.dp))
+//
+//                Text(
+//                    text = "Language: $original_language",
+//                    fontFamily = Font(R.font.font).toFontFamily(),
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 24.sp,
+//                    color = MaterialTheme.colorScheme.onBackground
+//                )
+//            }
+//
+//            // Circular rating progress bar (replace with your own component)
+//            CircularRatingProgressBar(rating = vote_average.toFloat())
+//        }
+//
+//        // Favorite Icon Button (toggles movie in favorites)
+//        IconButton(
+//            modifier = Modifier
+//                .padding(24.dp)
+//                .size(20.dp)
+//                .clip(RoundedCornerShape(5.dp))
+//                .background(MaterialTheme.colorScheme.onBackground),
+//            onClick = {
+//                // TODO: add the user to database under "users" with uid
+//                toggleFavorite()
+//            }
+//        ) {
+//            Icon(
+//                Icons.Rounded.Favorite, contentDescription = null,
+//                tint = if (isFavorite.value) Color.Red else MaterialTheme.colorScheme.background
+//            )
+//        }
+//
+//        Spacer(modifier = Modifier.height(40.dp))
+//
+//        // Scrollable overview text
+//        val scrollState = rememberScrollState()
+//        Column(
+//            modifier = Modifier
+//                .verticalScroll(scrollState)
+//                .padding(horizontal = 8.dp)
+//        ) {
+//            Text(
+//                text = overview,
+//                fontSize = 28.sp,
+//                fontWeight = FontWeight.Bold,
+//                color = MaterialTheme.colorScheme.onBackground,
+//                fontFamily = Font(R.font.font).toFontFamily()
+//            )
+//
+//            Spacer(modifier = Modifier.height(40.dp))
+//
+//            Text(
+//                text = "Cast",
+//                fontSize = 30.sp,
+//                fontWeight = FontWeight.Bold,
+//                color = MaterialTheme.colorScheme.onBackground,
+//                fontFamily = Font(R.font.montserrat).toFontFamily(),
+//            )
+//
+//            // Display cast in a LazyRow
+//            LazyRow {
+//                items(cast.size) {
+//                    cast.forEach { item ->
+//                        Card(
+//                            modifier = Modifier
+//                                .padding(8.dp)
+//                                .height(200.dp)
+//                                .width(160.dp)
+//                                .clip(RoundedCornerShape(10.dp))
+//                                .wrapContentSize(),
+//                            elevation = 20.dp,
+//                            backgroundColor = MaterialTheme.colorScheme.onBackground
+//                        ) {
+//
+//                            Image(
+//                                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${item.profile_path}"),
+//                                contentDescription = null,
+//                                modifier = Modifier.fillMaxSize()
+//                            )
+//
+//                            Column(
+//                                modifier = Modifier
+//                                    .fillMaxSize()
+//                                    .padding(bottom = 8.dp),
+//                                verticalArrangement = Arrangement.Bottom
+//                            ) {
+//                                Text(
+//                                    text = item.name,
+//                                    fontSize = 24.sp,
+//                                    fontWeight = FontWeight.Bold,
+//                                    color = Color.White,
+//                                    fontFamily = Font(R.font.font).toFontFamily(),
+//                                    modifier = Modifier.padding(start = 8.dp),
+//                                    maxLines = 2,
+//                                    overflow = TextOverflow.Ellipsis
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.height(50.dp))
+//        }
+//    }
+//}
 
 @Composable
-fun AboutTheMovie(modifier: Modifier = Modifier,
-                   title:String,
-                   adult:Boolean,
-                   original_language:String,
-                   vote_average:Double,
-                   overview:String,
-                   release_date:String,
-                  poster_path:String?=null,
-                    cast:List<Cast>,
-                  viewmodel:WatchListViewModel,
-                  id: Int
-                  )
-{
+fun AboutTheMovie(
+    modifier: Modifier = Modifier,
+    title: String,
+    adult: Boolean,
+    original_language: String,
+    vote_average: Double,
+    overview: String,
+    release_date: String,
+    poster_path: String? = null,
+    cast: List<Cast>,
+    id: Int
+) {
 
-//    val allmoviesinwatchlist= viewmodel.getAllListedMovies
-    val allMoviesInWatchlist by viewmodel.getAllListedMovies.collectAsState(initial = emptyList())
+    FirebaseFirestore.getInstance().firestoreSettings = FirebaseFirestoreSettings.Builder()
+        .setPersistenceEnabled(true)
+        .build()
 
-    // Check if the current movie is already in the watchlist
-    val isFavorite = allMoviesInWatchlist.any { it.movie_id.toInt() == id }
+    val auth = FirebaseAuth.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
 
+    // State to track if the movie is a favorite
+    val isFavorite = remember { mutableStateOf(false) }
+
+    // Get the current user from Firebase Authentication
+    val currentUser = auth.currentUser
+
+    // Function to create a user document if it doesn't exist
+    fun createUserDocumentIfNotExists(userId: String, movieId: Long) {
+        val userRef = firestore.collection("users").document(userId)
+
+        userRef.get().addOnSuccessListener { document ->
+            if (!document.exists()) {
+                val userData = mapOf(
+                    "favoriteMovies" to listOf(movieId) // Add the movie to the list immediately
+                )
+                userRef.set(userData)
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "User document created and movie added to favorites for user ID: $userId.")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Error creating user document for user ID: $userId", e)
+                    }
+            } else {
+                Log.d("Firestore", "User document already exists for user ID: $userId.")
+                // Add the movie to the favorite list if document already exists
+                userRef.update("favoriteMovies", FieldValue.arrayUnion(movieId))
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Movie added to favorites for user ID: $userId.")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Error adding movie to favorites for user ID: $userId", e)
+                    }
+            }
+        }.addOnFailureListener { e ->
+            Log.e("Firestore", "Error fetching user document for user ID: $userId", e)
+        }
+    }
+
+
+    // Function to toggle the favorite movie
+    fun toggleFavorite() {
+        currentUser?.let { user ->
+            Log.d("Firestore", "Toggling favorite for user ID: ${user.uid}, movie ID: $id")
+
+            // Ensure the user document exists before toggling the favorite
+            createUserDocumentIfNotExists(user.uid, id.toLong())
+
+            val userRef = firestore.collection("users").document(user.uid)
+
+            userRef.get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val movieIds = document.get("favoriteMovies") as? List<Long> ?: listOf()
+
+                    Log.d("Firestore", "Favorite movies list for user ID ${user.uid}: $movieIds")
+
+                    if (movieIds.contains(id.toLong())) {
+                        // If the movie is already in the list, remove it
+                        userRef.update("favoriteMovies", FieldValue.arrayRemove(id.toLong()))
+                            .addOnSuccessListener {
+                                Log.d("Firestore", "Movie removed from favorites for user ID: ${user.uid}.")
+                                isFavorite.value = false
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Firestore", "Error removing movie from favorites for user ID: ${user.uid}", e)
+                            }
+                    } else {
+                        // If the movie is not in the list, add it
+                        userRef.update("favoriteMovies", FieldValue.arrayUnion(id.toLong()))
+                            .addOnSuccessListener {
+                                Log.d("Firestore", "Movie added to favorites for user ID: ${user.uid}.")
+                                isFavorite.value = true
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Firestore", "Error adding movie to favorites for user ID: ${user.uid}", e)
+                            }
+                    }
+                } else {
+                    Log.e("Firestore", "User document does not exist for user ID: ${user.uid}.")
+                }
+            }.addOnFailureListener { e ->
+                Log.e("Firestore", "Error fetching user document for user ID: ${user.uid}", e)
+            }
+        }
+    }
+
+    // Function to check if the movie is already in the favorites
+    fun checkIfMovieIsInDatabase() {
+        currentUser?.let { user ->
+            val userRef = firestore.collection("users").document(user.uid)
+
+            userRef.get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val movieIds = document.get("favoriteMovies") as? List<Long> ?: listOf()
+                    isFavorite.value = movieIds.contains(id.toLong())
+                    Log.d("Firestore", "Movie ID: $id is ${if (isFavorite.value) "in" else "not in"} the favorite list for user ID: ${user.uid}.")
+                } else {
+                    Log.e("Firestore", "User document does not exist for user ID: ${user.uid}.")
+                }
+            }.addOnFailureListener { e ->
+                Log.e("Firestore", "Error checking favorite movies for user ID: ${user.uid}", e)
+            }
+        }
+    }
+
+    // Trigger the check when the composable is first loaded
+    LaunchedEffect(Unit) {
+        checkIfMovieIsInDatabase()
+    }
+
+    // UI layout for the movie details
     Column(
-        modifier= Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 10.dp)
             .padding(top = 8.dp),
         horizontalAlignment = Alignment.Start
     ) {
 
-        Text("${title}",
-            modifier= Modifier
+        Text(
+            text = title,
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
             fontFamily = Font(R.font.font).toFontFamily(),
             fontSize = 35.sp,
-            fontWeight = Bold,
+            fontWeight = FontWeight.Bold,
             maxLines = 2,
             color = MaterialTheme.colorScheme.onBackground
-
         )
-        Spacer(modifier=Modifier.height(40.dp))
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Row for additional movie information (e.g., adult rating, release date, language)
         Row(
-            modifier= Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
@@ -369,119 +769,104 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Adult: ",
+                    Text(
+                        text = "Adult: ",
                         fontFamily = Font(R.font.font).toFontFamily(),
                         fontSize = 24.sp,
-                        fontWeight = Bold,
+                        fontWeight = FontWeight.Bold,
                         maxLines = 2,
                         color = MaterialTheme.colorScheme.onBackground
-
                     )
-                    if(adult==true){
-                        Text("Yes",
-                            fontFamily = Font(R.font.font).toFontFamily(),
-                            fontSize = 24.sp,
-                            fontWeight = Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }else{
-                        Text("No",
-                            fontFamily = Font(R.font.font).toFontFamily(),
-                            fontSize = 24.sp,
-                            fontWeight = Bold,
-                            color = MaterialTheme.colorScheme.onBackground)
-
-                    }
+                    Text(
+                        text = if (adult) "Yes" else "No",
+                        fontFamily = Font(R.font.font).toFontFamily(),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 }
-                Spacer(modifier=Modifier.height(8.dp))
-                Text("Release Date: $release_date",
 
-                    fontFamily = Font(R.font.font).toFontFamily(),
-                    fontWeight = Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                    )
-                Spacer(modifier=Modifier.height(8.dp))
-                Text("Language: $original_language",
+                Spacer(modifier = Modifier.height(8.dp))
 
+                Text(
+                    text = "Release Date: $release_date",
                     fontFamily = Font(R.font.font).toFontFamily(),
-                    fontWeight = Bold,
+                    fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Language: $original_language",
+                    fontFamily = Font(R.font.font).toFontFamily(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
 
+            // Circular rating progress bar (replace with your own component)
             CircularRatingProgressBar(rating = vote_average.toFloat())
-
-
-
         }
 
+        // Favorite Icon Button (toggles movie in favorites)
         IconButton(
-            modifier=Modifier.padding(24.dp)
+            modifier = Modifier
+                .padding(24.dp)
                 .size(20.dp)
                 .clip(RoundedCornerShape(5.dp))
-                .background(MaterialTheme.colorScheme.onBackground)
-            ,
+                .background(MaterialTheme.colorScheme.onBackground),
             onClick = {
-                if (!isFavorite) {
-                    // Add the movie to the watchlist
-                    viewmodel.addAMovie(
-                        WatchList(
-                            movie_id = id,
-                            isSelected = true,
-                        )
-                    )
-                }
-                else{
-                    viewmodel.deleteAMovie(
-                        WatchList(
-                            movie_id = id,
-                            isSelected = false,
-                        )
-                    )
-                }
-
+                toggleFavorite()
             }
-        ){
-            Icon(Icons.Rounded.Favorite, contentDescription = null, tint = if(isFavorite) Color.Red else MaterialTheme.colorScheme.background)
+        ) {
+            Icon(
+                Icons.Rounded.Favorite, contentDescription = null,
+                tint = if (isFavorite.value) Color.Red else MaterialTheme.colorScheme.background
+            )
         }
 
-        Spacer(modifier=Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Scrollable overview text
         val scrollState = rememberScrollState()
-        Column(modifier= Modifier.verticalScroll(scrollState)
-            .padding(horizontal = 8.dp)
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(horizontal = 8.dp)
         ) {
             Text(
-            "${overview}",
-            fontSize = 28.sp,
-            fontWeight = Bold,
+                text = overview,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-            fontFamily = Font(R.font.font).toFontFamily(),
+                fontFamily = Font(R.font.font).toFontFamily()
+            )
 
-        )
-            Spacer(modifier=Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(40.dp))
+
             Text(
-                "Cast"
-                ,
+                text = "Cast",
                 fontSize = 30.sp,
-                fontWeight = Bold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontFamily = Font(R.font.montserrat).toFontFamily(),
             )
+
+            // Display cast in a LazyRow
             LazyRow {
                 items(cast.size) {
-                    cast.forEach {item ->
+                    cast.forEach { item ->
                         Card(
-                            modifier= Modifier
+                            modifier = Modifier
                                 .padding(8.dp)
                                 .height(200.dp)
                                 .width(160.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .wrapContentSize(),
-                            elevation = 20.dp
-                            ,
+                            elevation = 20.dp,
                             backgroundColor = MaterialTheme.colorScheme.onBackground
                         ) {
 
@@ -490,39 +875,279 @@ fun AboutTheMovie(modifier: Modifier = Modifier,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize()
                             )
+
                             Column(
-                                modifier= Modifier
+                                modifier = Modifier
                                     .fillMaxSize()
                                     .padding(bottom = 8.dp),
-                                verticalArrangement = Arrangement.Bottom,
-
-                                ) {
+                                verticalArrangement = Arrangement.Bottom
+                            ) {
                                 Text(
-                                    "${item.name}",
+                                    text = item.name,
                                     fontSize = 24.sp,
-                                    fontWeight = Bold,
+                                    fontWeight = FontWeight.Bold,
                                     color = Color.White,
                                     fontFamily = Font(R.font.font).toFontFamily(),
-                                    modifier=Modifier.padding(start = 8.dp),
+                                    modifier = Modifier.padding(start = 8.dp),
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
-
-
                             }
-
                         }
                     }
                 }
             }
-            Spacer(modifier=Modifier.height(50.dp))
+
+            Spacer(modifier = Modifier.height(50.dp))
         }
-
-
-
     }
-
 }
+
+
+
+//@Composable
+//fun AboutTheMovie(modifier: Modifier = Modifier,
+//                   title:String,
+//                   adult:Boolean,
+//                   original_language:String,
+//                   vote_average:Double,
+//                   overview:String,
+//                   release_date:String,
+//                  poster_path:String?=null,
+//                  cast:List<Cast>,
+//                  id: Int,
+////                  viewmodel: AboutMovieViewModel
+//                  )
+//{
+//
+//    val auth = FirebaseAuth.getInstance()
+//    val firestore = FirebaseFirestore.getInstance()
+//
+//    val isFavorite = remember { mutableStateOf(false) }
+//
+//    val currentUser = auth.currentUser
+//    fun toggleFavorite() {
+//        currentUser?.let { user ->
+//            val userRef = firestore.collection("users").document(user.uid)
+//
+//
+//            userRef.get().addOnSuccessListener { document ->
+//                if (document.exists()) {
+//                    val movieIds = document.get("favoriteMovies") as? List<Long> ?: listOf()
+//
+//
+//                    if (movieIds.contains(id.toLong())) {
+//
+//                        userRef.update("favoriteMovies", FieldValue.arrayRemove(id.toLong()))
+//                    } else {
+//
+//                        userRef.update("favoriteMovies", FieldValue.arrayUnion(id.toLong()))
+//                    }
+//                } else {
+//
+//                    val userData = mapOf(
+//                        "favoriteMovies" to listOf(id.toLong())
+//                    )
+//                    userRef.set(userData)
+//                }
+//            }
+//        }
+//    }
+//
+//    fun checkifitisinDatabse(){
+//
+//        currentUser?.let { user ->
+//            val userref= firestore.collection("users").document(user.uid)
+//            userref.get().addOnSuccessListener { document ->
+//                if (document.exists()) {
+//                    val movieIds = document.get("favoriteMovies") as? List<Long> ?: listOf()
+//                    isFavorite.value = movieIds.contains(id.toLong())
+//                }
+//
+//            }
+//        }
+//
+//
+//    }
+//
+//
+//    Column(
+//        modifier= Modifier
+//            .fillMaxSize()
+//            .padding(horizontal = 10.dp)
+//            .padding(top = 8.dp),
+//        horizontalAlignment = Alignment.Start
+//    ) {
+//
+//        Text("${title}",
+//            modifier= Modifier
+//                .fillMaxWidth()
+//                .padding(8.dp),
+//            fontFamily = Font(R.font.font).toFontFamily(),
+//            fontSize = 35.sp,
+//            fontWeight = Bold,
+//            maxLines = 2,
+//            color = MaterialTheme.colorScheme.onBackground
+//
+//        )
+//        Spacer(modifier=Modifier.height(40.dp))
+//        Row(
+//            modifier= Modifier
+//                .fillMaxWidth()
+//                .padding(8.dp),
+//            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Column(
+//                horizontalAlignment = Alignment.Start,
+//            ) {
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text("Adult: ",
+//                        fontFamily = Font(R.font.font).toFontFamily(),
+//                        fontSize = 24.sp,
+//                        fontWeight = Bold,
+//                        maxLines = 2,
+//                        color = MaterialTheme.colorScheme.onBackground
+//
+//                    )
+//                    if(adult==true){
+//                        Text("Yes",
+//                            fontFamily = Font(R.font.font).toFontFamily(),
+//                            fontSize = 24.sp,
+//                            fontWeight = Bold,
+//                            color = MaterialTheme.colorScheme.onBackground
+//                        )
+//                    }else{
+//                        Text("No",
+//                            fontFamily = Font(R.font.font).toFontFamily(),
+//                            fontSize = 24.sp,
+//                            fontWeight = Bold,
+//                            color = MaterialTheme.colorScheme.onBackground)
+//
+//                    }
+//                }
+//                Spacer(modifier=Modifier.height(8.dp))
+//                Text("Release Date: $release_date",
+//
+//                    fontFamily = Font(R.font.font).toFontFamily(),
+//                    fontWeight = Bold,
+//                    fontSize = 24.sp,
+//                    color = MaterialTheme.colorScheme.onBackground
+//                    )
+//                Spacer(modifier=Modifier.height(8.dp))
+//                Text("Language: $original_language",
+//
+//                    fontFamily = Font(R.font.font).toFontFamily(),
+//                    fontWeight = Bold,
+//                    fontSize = 24.sp,
+//                    color = MaterialTheme.colorScheme.onBackground
+//                )
+//
+//            }
+//
+//            CircularRatingProgressBar(rating = vote_average.toFloat())
+//
+//
+//
+//        }
+////        val isFavorite by viewmodel.isMovieInDatabase(id).collectAsState(initial = false)
+//        IconButton(
+//            modifier=Modifier.padding(24.dp)
+//                .size(20.dp)
+//                .clip(RoundedCornerShape(5.dp))
+//                .background(MaterialTheme.colorScheme.onBackground)
+//            ,
+//            onClick = {
+////                if(isFavorite){
+////                    viewmodel.deleteMovieFromDatabase(id)
+////                }else{
+////                    viewmodel.storeMovieToDatabase(id)
+////                }
+//                toggleFavorite()
+//            }
+//        ){
+//            Icon(Icons.Rounded.Favorite, contentDescription = null,
+//                tint = if(isFavorite.value) Color.Red else MaterialTheme.colorScheme.background
+//            )
+//        }
+//
+//        Spacer(modifier=Modifier.height(40.dp))
+//        val scrollState = rememberScrollState()
+//        Column(modifier= Modifier.verticalScroll(scrollState)
+//            .padding(horizontal = 8.dp)
+//        ) {
+//            Text(
+//            "${overview}",
+//            fontSize = 28.sp,
+//            fontWeight = Bold,
+//                color = MaterialTheme.colorScheme.onBackground,
+//            fontFamily = Font(R.font.font).toFontFamily(),
+//
+//        )
+//            Spacer(modifier=Modifier.height(40.dp))
+//            Text(
+//                "Cast"
+//                ,
+//                fontSize = 30.sp,
+//                fontWeight = Bold,
+//                color = MaterialTheme.colorScheme.onBackground,
+//                fontFamily = Font(R.font.montserrat).toFontFamily(),
+//            )
+//            LazyRow {
+//                items(cast.size) {
+//                    cast.forEach {item ->
+//                        Card(
+//                            modifier= Modifier
+//                                .padding(8.dp)
+//                                .height(200.dp)
+//                                .width(160.dp)
+//                                .clip(RoundedCornerShape(10.dp))
+//                                .wrapContentSize(),
+//                            elevation = 20.dp
+//                            ,
+//                            backgroundColor = MaterialTheme.colorScheme.onBackground
+//                        ) {
+//
+//                            Image(
+//                                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${item.profile_path}"),
+//                                contentDescription = null,
+//                                modifier = Modifier.fillMaxSize()
+//                            )
+//                            Column(
+//                                modifier= Modifier
+//                                    .fillMaxSize()
+//                                    .padding(bottom = 8.dp),
+//                                verticalArrangement = Arrangement.Bottom,
+//
+//                                ) {
+//                                Text(
+//                                    "${item.name}",
+//                                    fontSize = 24.sp,
+//                                    fontWeight = Bold,
+//                                    color = Color.White,
+//                                    fontFamily = Font(R.font.font).toFontFamily(),
+//                                    modifier=Modifier.padding(start = 8.dp),
+//                                    maxLines = 2,
+//                                    overflow = TextOverflow.Ellipsis
+//                                )
+//
+//
+//                            }
+//
+//                        }
+//                    }
+//                }
+//            }
+//            Spacer(modifier=Modifier.height(50.dp))
+//        }
+//
+//
+//
+//    }
+//
+//}
 
 
 
