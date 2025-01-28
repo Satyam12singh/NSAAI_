@@ -78,6 +78,7 @@ fun SignUpScreen(navController: NavController,
                 // Check email verification before navigating
                 val user = FirebaseAuth.getInstance().currentUser
                 if (user?.isEmailVerified == true) {
+
                     navController.navigate(Screens.Home.route) {
                         popUpTo(Screens.LoginScreen.route) { inclusive = true }
                     }

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +31,9 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -44,6 +48,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.nsaai.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.delay
+
+
 
 @Composable
 fun WatchListMovie(
@@ -54,42 +61,70 @@ fun WatchListMovie(
 ) {
     val firestore = FirebaseFirestore.getInstance()
     val movieIds = remember { mutableStateOf<List<Long>>(emptyList()) }
-//    val poster_path = remember{mutableStateOf<List<String>>}
-//    val title = remember{mutableStateOf<List<String>>}
+    var isLoading by remember { mutableStateOf(true) }
 
+    // Create a data class to hold movie information
+    data class MovieInfo(
+        val id: Long,
+        val posterPath: String,
+        val title: String
+    )
+
+    // State to hold all movie details
+    val movieDetailsMap = remember { mutableStateMapOf<Long, MovieInfo>() }
 
     // Function to fetch movie IDs from Firestore
     fun fetchMovieIds() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
-            val userId = currentUser.uid // Dynamically get the logged-in user's UID
+            val userId = currentUser.uid
             firestore.collection("users").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
                         val fetchedMovieIds = document.get("favoriteMovies") as? List<Long> ?: emptyList()
                         movieIds.value = fetchedMovieIds
-
-                        // Log all movie IDs fetched
                         Log.d("Firestore", "Fetched Movie IDs: $fetchedMovieIds")
                     } else {
                         Log.e("Firestore", "Document does not exist")
                     }
+                    isLoading = false
                 }
                 .addOnFailureListener { e ->
                     Log.e("Firestore", "Error fetching movie IDs", e)
+                    isLoading = false
                 }
         } else {
             Log.e("Firestore", "No authenticated user found")
+            isLoading = false
         }
     }
 
-    // Fetch movie IDs when the composable is launched
+    // Initial fetch of movie IDs
     LaunchedEffect(Unit) {
         fetchMovieIds()
     }
 
-    // Display a loading state if the movieIds list is empty
-    if (movieIds.value.isEmpty()) {
+    // Fetch details for each movie
+    LaunchedEffect(movieIds.value) {
+        movieIds.value.forEach { movieId ->
+            if (!movieDetailsMap.containsKey(movieId)) {
+                viewModel.fetchExternalIds(movieId.toInt())
+                delay(500)
+                val externalId = viewModel.externalId.value
+                viewmodel.fetchAboutTheMovie(externalId)
+                delay(500)
+
+                val movieInfo = MovieInfo(
+                    id = movieId,
+                    posterPath = viewmodel.posterPath.value,
+                    title = viewmodel.title.value
+                )
+                movieDetailsMap[movieId] = movieInfo
+            }
+        }
+    }
+
+    if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -99,23 +134,27 @@ fun WatchListMovie(
         return
     }
 
+    if (movieIds.value.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No Movies In Watch List")
+        }
+        return
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
             .padding(8.dp),
-
     ) {
-
-        items(movieIds.value) { movieId ->
-            // Use aboutMovieViewModel as required
-
-            viewModel.fetchExternalIds(movieId.toInt())
-            val externalid= viewModel.externalId.value
-            viewmodel.fetchAboutTheMovie(externalid)
-
-            val posterPath = viewmodel.posterPath.value
-            val title = viewmodel.title.value
+        items(
+            items = movieIds.value,
+            key = { it } // Use movieId as key for stable item identity
+        ) { movieId ->
+            val movieInfo = movieDetailsMap[movieId]
 
             Box(
                 modifier = Modifier
@@ -126,39 +165,40 @@ fun WatchListMovie(
                     .clickable {
                         navController.navigate("aboutmovie/${movieId.toInt()}")
                     }
-                    .padding(8.dp)
+
+
             ) {
-                // Display movie poster and title
-                Log.d("Firestore", "Poster Path: $posterPath, title:$title")
-                if (posterPath.isNotEmpty()) {
+                if (movieInfo == null) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .align(Alignment.Center)
+                    )
+                } else {
                     Image(
                         painter = rememberAsyncImagePainter(
-                            model = "https://image.tmdb.org/t/p/w500${posterPath}"
+                            model = "https://image.tmdb.org/t/p/w500${movieInfo.posterPath}"
                         ),
-                        contentDescription = title,
+                        contentDescription = movieInfo.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
 
+                    Text(
+                        text = movieInfo.title,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 8.dp),
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-
-                Text(
-                    text = title,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 8.dp),
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
-
-
-
 
 @Preview(showBackground = true)
 @Composable

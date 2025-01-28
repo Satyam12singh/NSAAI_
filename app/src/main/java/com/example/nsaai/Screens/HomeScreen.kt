@@ -25,6 +25,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.rememberDrawerState
@@ -295,7 +296,7 @@ fun DrawerContent(
         val drawerItems = listOf(
             Pair("Account", Icons.Rounded.AccountCircle),
             Pair("Notification", Icons.Rounded.Notifications),
-            Pair("InBox", Icons.Rounded.Email),
+            Pair("Favourite", Icons.Rounded.Favorite),
             Pair("LogOut", Icons.Rounded.Logout)
         )
 
@@ -318,7 +319,7 @@ fun DrawerContent(
                     when (label) {
                         "Account" -> Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show()
                         "Notification" -> navController.navigate(Screens.Notification.route)
-                        "InBox" -> navController.navigate(Screens.WatchList.route)
+                        "Favourite" -> navController.navigate(Screens.Favourite.route)
                         "LogOut" -> {
                             viewModel.logout()
                             navController.navigate("login") {

@@ -103,7 +103,7 @@ fun Navigation(
         composable(Screens.Notification.route){
             UpcomingMovieScreen(modifier=Modifier,viewModel=MovieViewModel(),navController=navController)
         }
-        composable(Screens.WatchList.route) {
+        composable(Screens.Favourite.route) {
             WatchListMovie(viewmodel= AboutMovieViewModel(),viewModel= MovieViewModel(),navController=navController)
         }
         composable(Screens.AboutMovie.route,

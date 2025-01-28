@@ -12,6 +12,6 @@ sealed class Screens(val route: String) {
     object PopularMovie:Screens("popularmovie")
     object TrendingMovies:Screens("trendingmovie")
     object Notification:Screens("notification")
-    object WatchList:Screens("watchlist")
+    object Favourite:Screens("favourite")
 
 }
