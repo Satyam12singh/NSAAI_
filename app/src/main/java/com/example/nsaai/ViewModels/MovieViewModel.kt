@@ -52,7 +52,7 @@ class MovieViewModel : ViewModel() {
 //    val allpopmovie = _allpopmovie
 
     private val _externalId = mutableStateOf("")
-    var externalId : State<String> = _externalId
+    val externalId : State<String> = _externalId
 
     // Automatically fetch movies when the ViewModel initializes
     init {
