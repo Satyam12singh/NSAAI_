@@ -258,7 +258,10 @@ fun AboutMovie(modifier: Modifier = Modifier,
 
                     }
                 2 -> {
-                    PlayYoutubeTrailer(id=id,viewmodel=viewmodel, lifeCycleOwner = LocalLifecycleOwner.current)
+                    if(pagerState.currentPage==2){
+                        PlayYoutubeTrailer(id=id,viewmodel=viewmodel, lifeCycleOwner = LocalLifecycleOwner.current)
+                    }
+
                 }
 
                 }
@@ -465,6 +468,7 @@ fun AboutTheMovie(
     Column(
         modifier = Modifier
             .fillMaxSize()
+
             .padding(horizontal = 10.dp)
             .padding(top = 8.dp),
         horizontalAlignment = Alignment.Start
@@ -501,7 +505,7 @@ fun AboutTheMovie(
                     Text(
                         text = "Adult: ",
                         fontFamily = Font(R.font.font).toFontFamily(),
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
                         color = MaterialTheme.colorScheme.onBackground
@@ -509,7 +513,7 @@ fun AboutTheMovie(
                     Text(
                         text = if (adult) "Yes" else "No",
                         fontFamily = Font(R.font.font).toFontFamily(),
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -521,7 +525,7 @@ fun AboutTheMovie(
                     text = "Release Date: $release_date",
                     fontFamily = Font(R.font.font).toFontFamily(),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
@@ -531,7 +535,7 @@ fun AboutTheMovie(
                     text = "Language: $original_language",
                     fontFamily = Font(R.font.font).toFontFamily(),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
@@ -568,7 +572,7 @@ fun AboutTheMovie(
         ) {
             Text(
                 text = overview,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontFamily = Font(R.font.font).toFontFamily()
