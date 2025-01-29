@@ -65,7 +65,7 @@ Movie Explorer is an immersive and dynamic Android application built with **Jetp
 
 | Home Screen | Drawer |
 |-------------|--------|
-| ![Home](https://github.com/user-attachments/assets/dbb85a0b-f2a3-42cc-93c1-b2d0ea651bd4) | ![Drawer](https://github.com/user-attachments/assets/80a3dbc1-4c1b-414c-9d6e-b2a2b5195f40) |
+| ![Home](https://github.com/user-attachments/assets/dbb85a0b-f2a3-42cc-93c1-b2d0ea651bd4) | ![Drawer](https://github.com/user-attachments/assets/b8db8814-d5cf-4069-b9bd-79d99039db95) |
 
 | Movie Screen | Popular Movies | Trending Movies |
 |-------------|---------------|-----------------|
@@ -99,9 +99,9 @@ Movie Explorer is an immersive and dynamic Android application built with **Jetp
 3. Configure **Firebase Authentication**
 4. Add your **TMDb API Key** to `local.properties`:
    ```properties
-     googleclientid= your Google Client ID
-     api_key_normal= 99e336afe......ad7ba8c2b706a18
-     API_KEY=eyJhbGciOiJIUzI1NiJ9.eyJhdWQi....mUzOTUwNmU1YWFkN2JhOGMyYjcwNm................iI2NzcyNDBjNjYzZjkwZjhmNjY5MjcwM..........BpX3JlYWQiXSwidmVyc2lvbiI6MX0._A46VjdrNeKLkVBTvf4aDuJ8gjNIu9oTQEKc2BX_KQc
+   googleclientid= your Google Client ID
+   api_key_normal= 99e336afe......ad7ba8c2b706a18
+   API_KEY=eyJhbGciOiJIUzI1NiJ9.eyJhdWQi....mUzOTUwNmU1YWFkN2JhOGMyYjcwNm................iI2NzcyNDBjNjYzZjkwZjhmNjY5MjcwM..........BpX3JlYWQiXSwidmVyc2lvbiI6MX0._A46VjdrNeKLkVBTvf4aDuJ8gjNIu9oTQEKc2BX_KQc
    ```
 5. Run the app on an emulator or a physical device
 
