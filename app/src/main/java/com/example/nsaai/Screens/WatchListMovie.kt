@@ -1,13 +1,16 @@
 package com.example.nsaai.Screens
 
 
+import android.content.Context
 import android.media.Image
+import android.net.ConnectivityManager
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +33,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -45,8 +51,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.util.TableInfo
 import coil.compose.rememberAsyncImagePainter
 import com.example.nsaai.R
+import com.example.nsaai.TopBar.TopBarMovie
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
@@ -273,10 +281,13 @@ fun WatchListMovie(
         }
     }
 
+    val context= LocalContext.current
     // Initial fetch of movie IDs
     LaunchedEffect(Unit) {
+        checkInternetConnectivity(context)
         fetchMovieIds()
     }
+
 
     // Fetch details for each movie
     LaunchedEffect(movieIds.value) {
@@ -290,7 +301,7 @@ fun WatchListMovie(
 
                 val movieInfo = MovieInfo(
                     id = movieId,
-                    posterPath = viewmodel.posterPath.value,
+                    posterPath = viewmodel.imageofmovie.value,
                     title = viewmodel.title.value
                 )
                 movieDetailsMap[movieId] = movieInfo
@@ -313,64 +324,112 @@ fun WatchListMovie(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("No Movies In Watch List")
+            Text("No Movies In Watch List",
+                color = MaterialTheme.colorScheme.onPrimary)
         }
         return
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        items(
-            items = movieIds.value,
-            key = { it } // Use movieId as key for stable item identity
-        ) { movieId ->
-            val movieInfo = movieDetailsMap[movieId]
 
-            Box(
-                modifier = Modifier
-                    .width(350.dp)
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .clickable {
-                        navController.navigate("aboutmovie/${movieId.toInt()}")
-                    }
+
+
+
+    if(checkInternetConnectivity(context) )
+    {
+
+        Scaffold(
+            topBar = {
+                TopBarMovie(navController = navController,name="Favourite Movies")
+            }
+        )
+        { paddingvalues ->
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingvalues),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (movieInfo == null) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .align(Alignment.Center)
-                    )
-                } else {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            model = "https://image.tmdb.org/t/p/w500${movieInfo.posterPath}"
-                        ),
-                        contentDescription = movieInfo.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                items(
+                    items = movieIds.value,
+                    key = { it } // Use movieId as key for stable item identity
+                ) { movieId ->
+                    val movieInfo = movieDetailsMap[movieId]
 
-                    Text(
-                        text = movieInfo.title,
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 8.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                            .width(350.dp)
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .clickable {
+                                navController.navigate("aboutmovie/${movieId.toInt()}")
+                            }
+                    ) {
+                        if (movieInfo == null) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .align(Alignment.Center)
+                            )
+                        } else {
+                            Image(
+                                painter = rememberAsyncImagePainter(
+                                    model = "https://image.tmdb.org/t/p/w500${movieInfo.posterPath}"
+                                ),
+                                contentDescription = movieInfo.title,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            Text(
+                                text = movieInfo.title,
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 8.dp),
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(15.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(15.dp))
         }
     }
+    else{
+
+        Scaffold(
+            topBar = {
+                TopBarMovie(navController = navController,name="Favourite Movies")
+            }
+        )
+        { PaddingValues->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(PaddingValues)
+                    .background(MaterialTheme.colorScheme.background.copy(0.5f)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    Icons.Rounded.NetworkCheck, contentDescription = "No Internet Connection",
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
+                )
+                Text(
+                    "No Internet Connection",
+                    fontFamily = Font(R.font.font).toFontFamily(),
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+
+
 }
 
 
@@ -379,4 +438,22 @@ fun WatchListMovie(
 @Composable
 private fun WatchListMoviePreview() {
     WatchListMovie(viewmodel = AboutMovieViewModel(), viewModel = MovieViewModel(), navController = NavController(LocalContext.current))
+}
+
+fun checkInternetConnectivity(context:Context):Boolean{
+    val context= context
+    val connectivityManager= context.getSystemService(ConnectivityManager::class.java) as ConnectivityManager
+    val network = connectivityManager.activeNetworkInfo
+
+    val isConnected = when{
+        network!=null && network.isConnected -> {
+            return true
+        }
+
+        else -> {
+            return false
+        }
+
+    }
+
 }

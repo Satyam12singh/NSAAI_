@@ -2,6 +2,8 @@ package com.example.nsaai.Screens
 
 
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -24,6 +26,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -89,181 +93,238 @@ fun MovieScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopBarMovie(navController = navController,name="Movies")
-        }
-    ) { paddingValues ->
-
-        SwipeRefresh(
-            state = swipeRefreshState,
-
-            onRefresh = {
-                coroutineScope.launch {
-                    isRefreshing=true
-                    viewmodel.fetchGenre()
-                    viewModel.fetchMovies()
-                    delay(3.seconds)
-                    isRefreshing=false
-
+    if(checkInternetConnectivity(context)){
+        if (!checkSlowInternet(context)){
+            Scaffold(
+                topBar = {
+                    TopBarMovie(navController = navController,name="Movies")
                 }
+            ) { paddingValues ->
 
-            }
-        ) {
+                SwipeRefresh(
+                    state = swipeRefreshState,
+
+                    onRefresh = {
+                        coroutineScope.launch {
+                            isRefreshing=true
+                            viewmodel.fetchGenre()
+                            viewModel.fetchMovies()
+                            delay(3.seconds)
+                            isRefreshing=false
+
+                        }
+
+                    }
+                ) {
 //            val minScrollThreshold = 200 // You can adjust this threshold as per your requirement
 //
 //            val isBelowThreshold = remember { derivedStateOf {
 //                scrollState.firstVisibleItemScrollOffset < minScrollThreshold
 //            }}
 
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                if (genreState.loading) {
+                    Column(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        if (genreState.loading) {
 //                Text("Loading genre...")
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 4.dp)
-                } else {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 4.dp)
+                        } else {
 
 
-                    LazyColumn {  // Fixed the nesting issue here
-                        items(genreState.list) { genre ->
-                            val filteredMovie = state.list.filter { movie: MovieResult ->
-                                genre.id in movie.genre_ids
+                            LazyColumn {  // Fixed the nesting issue here
+                                items(genreState.list) { genre ->
+                                    val filteredMovie = state.list.filter { movie: MovieResult ->
+                                        genre.id in movie.genre_ids
 
-                            }
-                            if (filteredMovie.isNotEmpty()) {
-                                Log.d("genreid", "Genre: ${genre.id}")
-                                Text(
-                                    text = genre.name,
-                                    modifier = Modifier.padding(10.dp),
-                                    fontSize = 24.sp,
-                                    fontFamily = Font(R.font.font).toFontFamily()
-                                )
+                                    }
+                                    if (filteredMovie.isNotEmpty()) {
+                                        Log.d("genreid", "Genre: ${genre.id}")
+                                        Text(
+                                            text = genre.name,
+                                            modifier = Modifier.padding(10.dp),
+                                            fontSize = 24.sp,
+                                            fontFamily = Font(R.font.font).toFontFamily()
+                                        )
 
-                                val lazyListState = rememberLazyListState()
+                                        val lazyListState = rememberLazyListState()
 
-                                Spacer(modifier = Modifier.height(10.dp))
-                                // Constrain LazyRow properly with a fixed height
-                                LazyRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(170.dp),
-                                    contentPadding = PaddingValues(20.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(20.dp),
-                                    state = lazyListState
-                                ) {
-
-                                    itemsIndexed(filteredMovie) { index, movie: MovieResult ->
-
-                                        val scale = calculateScale(index, lazyListState)
-
-                                        Log.d("genreid", "Movie: ${movie.genre_ids}")
-//                                    if (movie.genre_ids.contains(genre.id)) {
-                                        Box(
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        // Constrain LazyRow properly with a fixed height
+                                        LazyRow(
                                             modifier = Modifier
-                                                .height(150.dp)
-                                                .width(200.dp)
-                                                .graphicsLayer {
-                                                    scaleX = scale
-                                                    scaleY = scale
-                                                }
-                                                .clickable {
+                                                .fillMaxWidth()
+                                                .height(170.dp),
+                                            contentPadding = PaddingValues(20.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                            state = lazyListState
+                                        ) {
+
+                                            itemsIndexed(filteredMovie) { index, movie: MovieResult ->
+
+                                                val scale = calculateScale(index, lazyListState)
+
+                                                Log.d("genreid", "Movie: ${movie.genre_ids}")
+//                                    if (movie.genre_ids.contains(genre.id)) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .height(150.dp)
+                                                        .width(200.dp)
+                                                        .graphicsLayer {
+                                                            scaleX = scale
+                                                            scaleY = scale
+                                                        }
+                                                        .clickable {
 //                                                    Toast.makeText(context,"${movie.original_title} is clicked",Toast.LENGTH_SHORT).show()
 //                                                    viewModel.fetchExternalIds(movie.id)
-                                                    Log.d("this is sent to aboutmnovie","${movie.id}")
-                                                    navController.navigate("aboutmovie/${movie.id}")
+                                                            Log.d("this is sent to aboutmnovie","${movie.id}")
+                                                            navController.navigate("aboutmovie/${movie.id}")
 //                                                    navController.navigate("aboutmovie")
 
 //                                                    navController.navigate("externalids/${movie.id}")
-                                                }
-                                            ,
+                                                        }
+                                                    ,
 
 
-                                            ) {
-                                            Column {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .height(100.dp)
-                                                        .width(250.dp)
-                                                        .padding(start = 10.dp, end = 10.dp)
-                                                        .clip(RoundedCornerShape(20.dp))
-                                                        .background(MaterialTheme.colorScheme.onPrimary),
-                                                    contentAlignment = Alignment.Center
+                                                    ) {
+                                                    Column {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .height(100.dp)
+                                                                .width(250.dp)
+                                                                .padding(start = 10.dp, end = 10.dp)
+                                                                .clip(RoundedCornerShape(20.dp))
+                                                                .background(MaterialTheme.colorScheme.onPrimary),
+                                                            contentAlignment = Alignment.Center
 
-                                                ) {
-                                                    Image(
-                                                        painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"),
-                                                        contentDescription = null,
+                                                        ) {
+                                                            Image(
+                                                                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${movie.backdrop_path}"),
+                                                                contentDescription = null,
 
-                                                        )
-                                                    Text(
-                                                        "(${movie.original_language})",
-                                                        fontSize = 10.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontFamily = Font(R.font.poppins).toFontFamily(),
-                                                        color = Color.White,
-                                                        modifier = Modifier
-                                                            .align(Alignment.BottomCenter)
-                                                            .padding(bottom = 3.dp),
-                                                    )
-                                                }
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(horizontal = 5.dp),
-                                                    verticalAlignment = Alignment.Bottom,
-                                                    horizontalArrangement = Arrangement.Center
-                                                ) {
-                                                    var fontSize by remember { mutableStateOf(16.sp) }
+                                                                )
+                                                            Text(
+                                                                "(${movie.original_language})",
+                                                                fontSize = 10.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontFamily = Font(R.font.poppins).toFontFamily(),
+                                                                color = Color.White,
+                                                                modifier = Modifier
+                                                                    .align(Alignment.BottomCenter)
+                                                                    .padding(bottom = 3.dp),
+                                                            )
+                                                        }
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .padding(horizontal = 5.dp),
+                                                            verticalAlignment = Alignment.Bottom,
+                                                            horizontalArrangement = Arrangement.Center
+                                                        ) {
+                                                            var fontSize by remember { mutableStateOf(16.sp) }
 
-                                                    Log.d(
-                                                        "MovieTitle",
-                                                        "Title: ${movie.original_title}"
-                                                    )
-                                                    Text(
-                                                        "${movie.original_title}",
-                                                        fontSize = fontSize,
-                                                        maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis,
-                                                        onTextLayout = { textLayoutResult ->
-                                                            if (textLayoutResult.hasVisualOverflow) {
-                                                                fontSize =
-                                                                    10.sp // Reduce font size when there's overflow
-                                                            }
-                                                        },
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontFamily = Font(R.font.poppins).toFontFamily(),
-                                                        color = MaterialTheme.colorScheme.onBackground,
+                                                            Log.d(
+                                                                "MovieTitle",
+                                                                "Title: ${movie.original_title}"
+                                                            )
+                                                            Text(
+                                                                "${movie.original_title}",
+                                                                fontSize = fontSize,
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis,
+                                                                onTextLayout = { textLayoutResult ->
+                                                                    if (textLayoutResult.hasVisualOverflow) {
+                                                                        fontSize =
+                                                                            10.sp // Reduce font size when there's overflow
+                                                                    }
+                                                                },
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontFamily = Font(R.font.poppins).toFontFamily(),
+                                                                color = MaterialTheme.colorScheme.onBackground,
 
 //                                                        modifier=Modifier.padding(bottom = 2.dp)
-                                                    )
+                                                            )
+
+                                                        }
+
+                                                    }
+
 
                                                 }
-
-                                            }
-
-
-                                        }
 //                                    }
 
+                                            }
+                                        }
                                     }
+
                                 }
                             }
 
                         }
                     }
-
                 }
+
+            }
+        }else{
+            Scaffold(
+                topBar = {
+                    TopBarMovie(navController = navController,name="Movies")
+                }
+            ){PaddingValues->
+                Column(
+                    modifier=Modifier.fillMaxSize().padding(PaddingValues)
+                        .background(MaterialTheme.colorScheme.background.copy(0.5f)),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        Icons.Rounded.NetworkCheck, contentDescription = "Slow Internet Connection",
+                        modifier= Modifier.background(MaterialTheme.colorScheme.onBackground))
+                    androidx.compose.material.Text(
+                        "Slow Internet Connection",
+                        fontFamily = Font(R.font.font).toFontFamily(),
+                        fontSize = 24.sp,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+        }
+
+    }
+    else{
+        Scaffold(
+            topBar = {
+                TopBarMovie(navController = navController,name="Movies")
+            }
+        ){PaddingValues->
+            Column(
+                modifier=Modifier.fillMaxSize().padding(PaddingValues)
+                    .background(MaterialTheme.colorScheme.background.copy(0.5f)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    Icons.Rounded.NetworkCheck, contentDescription = "No Internet Connection",
+                    modifier= Modifier.background(MaterialTheme.colorScheme.onBackground))
+                androidx.compose.material.Text(
+                    "No Internet Connection",
+                    fontFamily = Font(R.font.font).toFontFamily(),
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
     }
+
 }
 
 
@@ -288,3 +349,16 @@ fun calculateScale(index: Int, listState: androidx.compose.foundation.lazy.LazyL
         1.0f // Default scale if the item is not visible
     }
 }
+
+@Composable
+fun checkSlowInternet(context:Context):Boolean {
+    val context = context
+    val connectivityManager = context.getSystemService(ConnectivityManager::class.java) as ConnectivityManager
+    val network = connectivityManager.activeNetwork
+    val capabilities = connectivityManager.getNetworkCapabilities(network)
+
+    val isSlowConnection = capabilities?.linkDownstreamBandwidthKbps ?: 0 < 1000 // Example threshold: 1 Mbps
+
+    if (isSlowConnection) return true else return false
+}
+
