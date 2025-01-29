@@ -265,8 +265,8 @@ fun DrawerContent(
         modifier = Modifier
             .fillMaxHeight() // Occupy only height
             .width(300.dp) // Limit the drawer width
-            .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(0.5f))
+            .clip(RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 10.dp)
     ) {
         Column(
@@ -303,16 +303,16 @@ fun DrawerContent(
         drawerItems.forEach { (label, icon) ->
             val isSelected = selectedItem.value == label
             NavigationDrawerItem(
+
                 icon = { Icon(imageVector = icon, contentDescription = null) },
                 label = { Text(label) },
                 selected = isSelected,
                 colors = NavigationDrawerItemDefaults.colors(
+                    unselectedContainerColor = MaterialTheme.colorScheme.onSurface,
                     selectedContainerColor = if (isSelected) MaterialTheme.colorScheme.background
                     else MaterialTheme.colorScheme.onBackground,
-                    selectedIconColor = if (isSelected) MaterialTheme.colorScheme.onBackground
-                        else MaterialTheme.colorScheme.background,
-                    selectedTextColor  = if (isSelected) MaterialTheme.colorScheme.onBackground
-                    else MaterialTheme.colorScheme.background
+                    unselectedIconColor = MaterialTheme.colorScheme.surface,
+                    unselectedTextColor  = MaterialTheme.colorScheme.surface
                 ),
                 onClick = {
                     selectedItem.value = label
