@@ -264,23 +264,50 @@ fun SignUpScreen(navController: NavController,
                             }
                         )
 
-
+//
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth()
+//                                .,
+//                            verticalAlignment = Alignment.CenterVertically,
+//                        ) {
+//                            Checkbox(
+//                                checked = checked,
+//                                onCheckedChange = { checked = it },
+//                                modifier = Modifier.padding(8.dp)
+//                            )
+//                            Text("I agree to the processing of", color = MaterialTheme.colorScheme.background)
+//                            Text(
+//                                " Personal data",
+//                                color = MaterialTheme.colorScheme.primary,
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        }
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentSize()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Checkbox(
                                 checked = checked,
                                 onCheckedChange = { checked = it },
-                                modifier = Modifier.padding(8.dp)
+//                                modifier = Modifier.padding(end = 4.dp)
                             )
-                            Text("I agree to the processing of", color = MaterialTheme.colorScheme.background)
+
                             Text(
-                                " Personal data",
+                                text = "I agree to the processing of",
+                                color = MaterialTheme.colorScheme.background,
+//                                modifier = Modifier.weight(1f) // Allows text to take necessary space
+                            )
+
+                            Text(
+                                text = " Personal data",
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
+
 
 
                         Divider(
