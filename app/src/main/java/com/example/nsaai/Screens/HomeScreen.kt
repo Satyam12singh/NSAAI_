@@ -271,7 +271,7 @@ fun DrawerContent(
     ) {
         Column(
             modifier = Modifier
-                .padding(vertical = 30.dp)
+                .padding(vertical = 60.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -287,12 +287,12 @@ fun DrawerContent(
         }
 
 
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(30.dp))
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 15.dp),
             color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
         )
-        Spacer(modifier = Modifier.height(90.dp))
+        Spacer(modifier = Modifier.height(100.dp))
 
         val drawerItems = listOf(
             Pair("Account", Icons.Rounded.AccountCircle),
