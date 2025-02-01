@@ -2,7 +2,6 @@ package com.example.nsaai.Screens
 
 import android.content.res.Configuration
 import android.util.Log
-import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,14 +22,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.ui.util.lerp
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 
 import androidx.compose.material.Icon
@@ -38,16 +35,15 @@ import androidx.compose.material.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -55,14 +51,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.Black
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -77,7 +69,6 @@ import com.example.nsaai.ViewModels.AboutMovieViewModel
 import com.example.nsaai.ViewModels.MovieViewModel
 //import com.example.nsaai.dataofwatchlist.WatchList
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -96,41 +87,100 @@ fun AboutMovie(modifier: Modifier = Modifier,
                id:Int
 
 ) {
-//    LaunchedEffect(Unit) {
+
+
+
+//    val externalIds = viewModel.externalId.collectAsState().value
+//    val isLoading = remember { mutableStateOf(true) }
+//
+//    Log.d("AM id passed", "$id")
+//    LaunchedEffect(key1 = id) {
+//        isLoading.value=true
 //        viewModel.fetchExternalIds(id)
+//        isLoading.value=false
+//    }
+//
+////    LaunchedEffect(key1 = externalid_fetched) {
+////        if(externalid_fetched.isNotEmpty()){
+////            isLoading.value=true
+////            viewmodel.fetchAboutTheMovie(externalid_fetched)
+////            viewmodel.fetchAllMovieDetails(id)
+////            viewmodel.fetchCastDetails(id)
+////            isLoading.value=false
+////
+////        }
+////    }
+//    LaunchedEffect(key1 = externalid_fetched) {
+//        if (externalid_fetched.isNotEmpty()) {
+//            isLoading.value = true
+//            viewmodel.fetchAboutTheMovie(externalid_fetched) { // Provide the callback
+//                isLoading.value = false
+//            }
+//            viewmodel.fetchAllMovieDetails(id) { // Provide the callback
+//                isLoading.value = false
+//            }
+//            viewmodel.fetchCastDetails(id) { // Provide the callback
+//                isLoading.value = false
+//            }
+//        }
 //    }
 
-    Log.d("AM id passed", "$id")
+    val isLoading = remember { mutableStateOf(true) }
+
+    // Collect the external IDs flow as a state.
+    val externalIds = viewModel.externalId.collectAsState().value
+
+    // Get the external ID for the current movie ID.
+    val externalId = externalIds[id]
+
+    // Key the LaunchedEffect by the movie ID.
     LaunchedEffect(key1 = id) {
-        viewModel.fetchExternalIds(id)
+        isLoading.value = true
+
+        // Fetch the external ID if it's not already available.
+        if (externalId == null || externalId.isEmpty()) {
+            viewModel.fetchExternalIds(id) // Assuming this function is now in your ViewModel
+        } else {
+            isLoading.value = false // External ID is already available
+        }
     }
 
+    // Key the second LaunchedEffect by the externalId itself.
+    LaunchedEffect(key1 = externalId) {
+        if (externalId != null && externalId.isNotEmpty()) {
+            isLoading.value = true
+            viewmodel.fetchAboutTheMovie(externalId) { isLoading.value = false }
+            viewmodel.fetchAllMovieDetails(id) { isLoading.value = false }
+            viewmodel.fetchCastDetails(id) { isLoading.value = false }
+        }
+    }
+    val posterpath = viewmodel.posterPath.value
+    val imagepath = viewmodel.imageofmovie.value
 
-    val externalid_fetched = viewModel.externalId.value
-    Log.d("AM externalid fetched", "$externalid_fetched")
+    Log.d("AM externalid fetched", "$externalIds")
 
-    viewmodel.fetchAboutTheMovie(externalid_fetched)
-    val poster_path = viewmodel.posterPath.value
-    val image_path = viewmodel.imageofmovie.value
+//    viewmodel.fetchAboutTheMovie(externalid_fetched)
+//    val poster_path = viewmodel.posterPath.value
+//    val image_path = viewmodel.imageofmovie.value
 
     val key = viewmodel.key.value
     val istrailer= viewmodel.trailerornot.value
 
 //    Details of Movie
-    viewmodel.fetchAllMovieDetails(id)
+//    viewmodel.fetchAllMovieDetails(id)
     val title= viewmodel.title.value
     val adult=viewmodel.adult.value
-    val original_language=viewmodel.original_language.value
-    val vote_average=viewmodel.vote_average.value
+    val originallanguage=viewmodel.original_language.value
+    val voteaverage=viewmodel.vote_average.value
     val overview=viewmodel.overview.value
-    val release_date=viewmodel.release_date.value
+    val releasedate=viewmodel.release_date.value
 
 //    About Cast
-    viewmodel.fetchCastDetails(id)
+//    viewmodel.fetchCastDetails(id)
     val cast=viewmodel.cast.value
 
 //    val content="Lorem ipsum odor amet, consectetuer adipiscing elit. Quisque malesuada vivamus morbi at; nisi faucibus. Cursus netus nulla dictumst nec lobortis mattis. Tristique leo eleifend nullam et aptent scelerisque egestas pulvinar. Nam sem purus et nibh habitant sem ac et. Nostra luctus placerat integer ultricies aptent euismod. Maximus at adipiscing aliquet magna non varius volutpat adipiscing! Ac commodo at maecenas eget egestas auctor. Nec torquent dolor urna libero euismod sagittis neque lobortis. Convallis faucibus aliquet dolor ex duis arcu. Fermentum fermentum blandit mi conubia semper condimentum etiam. Varius viverra fermentum nulla litora class. Odio sodales interdum sed inceptos integer et taciti sollicitudin. Netus torquent dis neque iaculis curabitur mattis ad elementum erat. Parturient primis curae pulvinar urna varius et id. Viverra et finibus tincidunt taciti ad hac porttitor venenatis. Bibendum congue placerat lobortis facilisi at potenti. Accumsan faucibus tincidunt vivamus erat class. Cursus quis sodales molestie natoque viverra netus habitant. Hac neque lacus primis mi nisi aliquet sodales dis iaculis. Ex iaculis tempus fermentum cursus ex et. Justo facilisi primis netus parturient, laoreet libero finibus mauris curae. Dignissim mus sapien, aliquam nostra morbi primis eu. Proin senectus ultricies sollicitudin sagittis dapibus hac. Magna sed a; lectus platea elementum mattis. Proin tortor taciti magnis velit felis rutrum risus enim. Conubia parturient iaculis aliquet est sapien curabitur. Nulla litora mattis nunc facilisis dapibus pulvinar non. Nostra natoque faucibus aliquet; pretium efficitur id. Vehicula erat conubia libero suspendisse eget sollicitudin dis. Turpis mattis fermentum natoque lectus mattis libero leo vivamus. Morbi magna eget adipiscing senectus et; per hendrerit? Id molestie taciti aliquam massa integer curabitur sollicitudin iaculis. Nam vehicula porta rhoncus curabitur lorem neque ex. Varius sapien arcu massa urna auctor. Augue mollis sociosqu pellentesque convallis nec ex blandit molestie id. Maximus at eleifend ad gravida taciti. Massa class pulvinar fames placerat libero?"
-    Log.d("AM poster path", "$poster_path")
+    Log.d("AM poster path", "$posterpath")
 //    val scrollState = rememberScrollState()
 
     val pagerState = rememberPagerState(pageCount = { 3 }) // Two pages
@@ -139,136 +189,146 @@ fun AboutMovie(modifier: Modifier = Modifier,
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.background)
     ){
-        HorizontalPager(state = pagerState) { page ->
+        if (isLoading.value) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (title.isNullOrEmpty() || posterpath.isNullOrEmpty() || imagepath.isNullOrEmpty() || cast == null) { // Check for null or empty
+            // Handle the case where data is not available. Show a progress indicator for example
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }else{
+            HorizontalPager(state = pagerState) { page ->
 
-            when (page) {
-                0 -> {
+                when (page) {
+                    0 -> {
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
 //                            .background(
 //                                brush = Brush.verticalGradient(
 //                                    colors = listOf(Color.Black, Color.Gray),
 //                                    endY = 5000f
 //                                )
 //                            )
-                            .background(MaterialTheme.colorScheme.background)
-                        ,
+                                .background(MaterialTheme.colorScheme.background)
+                            ,
 
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Top
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Top
 
-                    ) {
-
-
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentSize()
-                                .padding(vertical = 10.dp, horizontal = 30.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentAlignment = Alignment.TopCenter
                         ) {
-                            val painter= rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/original/${poster_path}")
-                            val painterstate= painter.state
-                            Image(
-                                painter = painter,
-                                contentDescription = null
-                            )
-                            when(painterstate){
-                                is AsyncImagePainter.State.Error->{
-                                    Box(modifier= Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center){
 
-                                        Column {
-                                            Icon(
-                                                imageVector = Icons.Rounded.BrokenImage,
-                                                contentDescription = "Image not Loaded Properly",
-                                                tint = MaterialTheme.colorScheme.onBackground,
-                                                modifier = Modifier.size(40.dp)
+
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize()
+                                    .padding(vertical = 10.dp, horizontal = 30.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentAlignment = Alignment.TopCenter
+                            ) {
+                                val painter= rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/original/${posterpath}")
+                                val painterstate= painter.state
+                                Image(
+                                    painter = painter,
+                                    contentDescription = null
+                                )
+                                when(painterstate){
+                                    is AsyncImagePainter.State.Error->{
+                                        Box(modifier= Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center){
+
+                                            Column {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.BrokenImage,
+                                                    contentDescription = "Image not Loaded Properly",
+                                                    tint = MaterialTheme.colorScheme.onBackground,
+                                                    modifier = Modifier.size(40.dp)
+                                                )
+                                                Text(
+                                                    text = "Image not Loaded Properly",
+                                                    color = MaterialTheme.colorScheme.onBackground
+
+                                                )
+                                            }
+                                        }
+
+                                    }
+                                    is AsyncImagePainter.State.Success ->{
+                                        Card(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomCenter)
+                                                .size(40.dp)
+                                                .border(
+                                                    width = 2.dp,
+                                                    color = Color.Gray,
+                                                    shape = CircleShape
+                                                )
+                                                .clip(CircleShape)
+                                                .padding(2.dp)
+                                                .background(Color.White)
+                                            ,
+                                            elevation = CardDefaults.cardElevation(20.dp),
+
+
+
                                             )
-                                            Text(
-                                                text = "Image not Loaded Properly",
-                                                color = MaterialTheme.colorScheme.onBackground
-
+                                        {
+                                            Image(
+                                                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${imagepath}"),
+                                                contentDescription = null,
+                                                modifier = Modifier.fillMaxSize()
                                             )
                                         }
                                     }
-
-                                }
-                                is AsyncImagePainter.State.Success ->{
-                                    Card(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .size(40.dp)
-                                            .border(
-                                                width = 2.dp,
-                                                color = Color.Gray,
-                                                shape = CircleShape
-                                            )
-                                            .clip(CircleShape)
-                                            .padding(2.dp),
-                                        elevation = 20.dp,
-                                        backgroundColor = Color.White
-
-
-                                    )
-                                    {
-                                        Image(
-                                            painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${image_path}"),
-                                            contentDescription = null,
-                                            modifier = Modifier.fillMaxSize()
+                                    is AsyncImagePainter.State.Loading -> {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.align(Alignment.Center)
                                         )
                                     }
-                                }
-                                is AsyncImagePainter.State.Loading -> {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                }
-                                is AsyncImagePainter.State.Empty -> {
-                                    Text(
-                                        text = "No image to display",
-                                        modifier = Modifier.align(Alignment.Center),
-                                        color = MaterialTheme.colorScheme.onBackground
-                                    )
+                                    is AsyncImagePainter.State.Empty -> {
+                                        Text(
+                                            text = "No image to display",
+                                            modifier = Modifier.align(Alignment.Center),
+                                            color = MaterialTheme.colorScheme.onBackground
+                                        )
+                                    }
+
                                 }
 
                             }
 
                         }
 
+
                     }
 
-
-                }
-
-                1 -> {
+                    1 -> {
 
                         AboutTheMovie(id=id,
                             title = title,
                             adult = adult,
-                            original_language = original_language,
+                            original_language = originallanguage,
                             overview = overview,
-                            release_date = release_date,
-                            vote_average = vote_average,
-                            poster_path = poster_path,
+                            release_date = releasedate,
+                            vote_average = voteaverage,
+                            poster_path = posterpath,
                             cast=cast,
 //                            viewmodel=viewmodel
                         )
 
                     }
-                2 -> {
-                    if(pagerState.currentPage==2){
-                        PlayYoutubeTrailer(id=id,viewmodel=viewmodel, lifeCycleOwner = LocalLifecycleOwner.current)
+                    2 -> {
+                        if(pagerState.currentPage==2){
+                            PlayYoutubeTrailer(id=id,viewmodel=viewmodel, lifeCycleOwner = LocalLifecycleOwner.current)
+                        }
+
                     }
 
                 }
-
-                }
             }
+        }
+
 
         Row(
             modifier = Modifier
@@ -601,9 +661,11 @@ fun AboutTheMovie(
                                 .height(200.dp)
                                 .width(160.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .wrapContentSize(),
-                            elevation = 20.dp,
-                            backgroundColor = MaterialTheme.colorScheme.onBackground
+                                .wrapContentSize()
+                                .background(Color.White)
+                            ,
+                            elevation = CardDefaults.cardElevation(20.dp),
+
                         ) {
 
                             Image(
@@ -639,6 +701,84 @@ fun AboutTheMovie(
     }
 }
 
+
+@Composable
+fun calculateScaleFor(index: Int, listState: androidx.compose.foundation.lazy.LazyListState): Float {
+    // Get the visible items and the center of the viewport
+    val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
+    val viewportCenter = (listState.layoutInfo.viewportEndOffset + listState.layoutInfo.viewportStartOffset) / 2
+
+    // Find the item info for the given index
+    val itemInfo = visibleItemsInfo.find { it.index == index }
+
+    return if (itemInfo != null) {
+        // Calculate the distance from the center of the viewport
+        val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+        val distanceFromCenter = abs(itemCenter - viewportCenter)
+
+        // Calculate the scale based on the distance
+        1.0f + (0.5f * (1.0f - min(1f, distanceFromCenter / 500f)))
+    } else {
+        1.0f // Default scale if the item is not visible
+    }
+}
+
+@Composable
+fun PlayYoutubeTrailer(
+    modifier: Modifier = Modifier,
+    id: Int,
+    viewmodel: AboutMovieViewModel,
+    lifeCycleOwner: LifecycleOwner
+) {
+    LaunchedEffect(key1= id) {
+        viewmodel.fetchyoutubetrailerid(id)
+    }
+
+    val listofvideolinks = viewmodel.listofresultlinks.value
+
+    val orientation = LocalConfiguration.current.orientation
+    val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
+    val systemUiController = rememberSystemUiController()
+
+
+    LaunchedEffect(isLandscape) {
+        systemUiController.isSystemBarsVisible = !isLandscape
+    }
+
+
+    val firstTrailer = listofvideolinks.firstOrNull { it.type == "Trailer" }
+
+
+    firstTrailer?.let { video ->
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            AndroidView(
+                modifier = if (isLandscape) {
+                    Modifier.fillMaxSize()
+                } else {
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                },
+                factory = { context ->
+                    YouTubePlayerView(context = context).apply {
+                        lifeCycleOwner.lifecycle.addObserver(this)
+
+                        addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                            override fun onReady(youTubePlayer: YouTubePlayer) {
+                                // Load the first trailer video
+                                youTubePlayer.loadVideo(video.key, 0f)
+                            }
+                        })
+                    }
+                }
+            )
+        }
+    }
+}
 
 
 
@@ -735,79 +875,3 @@ fun AboutTheMovie(
 //        ))
 //
 //}
-
-
-@Composable
-fun calculateScaleFor(index: Int, listState: androidx.compose.foundation.lazy.LazyListState): Float {
-    // Get the visible items and the center of the viewport
-    val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
-    val viewportCenter = (listState.layoutInfo.viewportEndOffset + listState.layoutInfo.viewportStartOffset) / 2
-
-    // Find the item info for the given index
-    val itemInfo = visibleItemsInfo.find { it.index == index }
-
-    return if (itemInfo != null) {
-        // Calculate the distance from the center of the viewport
-        val itemCenter = itemInfo.offset + (itemInfo.size / 2)
-        val distanceFromCenter = abs(itemCenter - viewportCenter)
-
-        // Calculate the scale based on the distance
-        1.0f + (0.5f * (1.0f - min(1f, distanceFromCenter / 500f)))
-    } else {
-        1.0f // Default scale if the item is not visible
-    }
-}
-
-@Composable
-fun PlayYoutubeTrailer(
-    modifier: Modifier = Modifier,
-    id: Int,
-    viewmodel: AboutMovieViewModel,
-    lifeCycleOwner: LifecycleOwner
-) {
-    viewmodel.fetchyoutubetrailerid(id)
-    val listofvideolinks = viewmodel.listofresultlinks.value
-
-    val orientation = LocalConfiguration.current.orientation
-    val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
-    val systemUiController = rememberSystemUiController()
-
-
-    LaunchedEffect(isLandscape) {
-        systemUiController.isSystemBarsVisible = !isLandscape
-    }
-
-
-    val firstTrailer = listofvideolinks.firstOrNull { it.type == "Trailer" }
-
-
-    firstTrailer?.let { video ->
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            AndroidView(
-                modifier = if (isLandscape) {
-                    Modifier.fillMaxSize()
-                } else {
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                },
-                factory = { context ->
-                    YouTubePlayerView(context = context).apply {
-                        lifeCycleOwner.lifecycle.addObserver(this)
-
-                        addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
-                            override fun onReady(youTubePlayer: YouTubePlayer) {
-                                // Load the first trailer video
-                                youTubePlayer.loadVideo(video.key, 0f)
-                            }
-                        })
-                    }
-                }
-            )
-        }
-    }
-}

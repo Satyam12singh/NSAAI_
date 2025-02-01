@@ -15,6 +15,9 @@ import com.example.nsaai.datafromapi.MovieResult
 import com.google.gson.Gson
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -52,8 +55,24 @@ class MovieViewModel : ViewModel() {
 //    private val _allpopmovie = mutableStateOf<List<Result>>(listOf())
 //    val allpopmovie = _allpopmovie
 
-    private val _externalId = mutableStateOf("")
-    val externalId : State<String> = _externalId
+//    private val _externalId = mutableStateOf("")
+//    val externalId : State<String> = _externalId
+private val _externalId = MutableStateFlow<Map<Int, String>>(emptyMap())
+    val externalId: StateFlow<Map<Int, String>> = _externalId.asStateFlow()
+
+    suspend fun fetchExternalIds(movieId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = findexternalids(movieId)
+                val externalIdResponse = Gson().fromJson(response, ExternalIds::class.java)
+                _externalId.value = _externalId.value + (movieId to (externalIdResponse.imdb_id ?: ""))
+
+            } catch (e: Exception) {
+                Log.e("fetchExternalId", "Error: ${e.message}")
+                _externalId.value = _externalId.value + (movieId to "") // Or handle the error as needed
+            }
+        }
+    }
 
     // Automatically fetch movies when the ViewModel initializes
     init {
@@ -262,23 +281,38 @@ class MovieViewModel : ViewModel() {
 
 
 
-    suspend fun fetchExternalIds(movieid: Int) {
-        viewModelScope.launch {
-            try {
-                val response = findexternalids(movieid)
-                val externalidResponse = Gson().fromJson(response, ExternalIds::class.java)
+//    fun fetchExternalIds(movieid: Int) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            try {
+//                val response = findexternalids(movieid)
+//                val externalidResponse = Gson().fromJson(response, ExternalIds::class.java)
+//
+//                _externalId.value= externalidResponse.imdb_id
+//
+//                Log.d("External_ID", "IMDB ID: ${externalidResponse.imdb_id}")
+//                Log.d("exfetchfor aboutmnovie","${externalidResponse.imdb_id}")
+//
+//            } catch (e: Exception) {
+//                Log.d("External_ID", "Error: ${e.message}")
+//
+//            }
+//        }
+//
+//    }
 
-                _externalId.value= externalidResponse.imdb_id
-
-                Log.d("External_ID", "IMDB ID: ${externalidResponse.imdb_id}")
-                Log.d("exfetchfor aboutmnovie","${externalidResponse.imdb_id}")
-
-            } catch (e: Exception) {
-                Log.d("External_ID", "Error: ${e.message}")
-            }
-        }
-    }
-
+//    suspend fun fetchExternalIds(movieId: Int) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            try {
+//                val response = findexternalids(movieId)
+//                val externalIdResponse = Gson().fromJson(response, ExternalIds::class.java)
+//                _externalId.value = _externalId.value + (movieId to (externalIdResponse.imdb_id ?: ""))
+//
+//            } catch (e: Exception) {
+//                Log.e("fetchExternalId", "Error: ${e.message}")
+//                _externalId.value = _externalId.value + (movieId to "") // Or handle the error as needed
+//            }
+//        }
+//    }
 
 
     data class MovieState(

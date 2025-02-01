@@ -81,8 +81,8 @@ class AboutMovieViewModel : ViewModel()
     val listofresultlinks = _listofvideolinks
 
     // Fetch basic movie details
-    fun fetchAboutTheMovie(id: String) {
-        viewModelScope.launch {
+    suspend fun fetchAboutTheMovie(id: String,onComplete: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = fetchAboutMovie(id)
                 Log.d("AboutMovieViewModel", "API Response: $response")
@@ -99,6 +99,7 @@ class AboutMovieViewModel : ViewModel()
                 Log.e("fetchAboutTheMovie", "Error: ${e.message}")
             }
         }
+        onComplete()
     }
 
     private suspend fun fetchAboutMovie(id: String): String {
@@ -121,8 +122,8 @@ class AboutMovieViewModel : ViewModel()
 
 
     // Fetch cast details
-    fun fetchCastDetails(id: Int) {
-        viewModelScope.launch {
+    suspend fun fetchCastDetails(id: Int,onComplete: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = fetchCastDetailsFromApi(id)
                 val crewMembers = Gson().fromJson(response, CrewMembers::class.java)
@@ -131,6 +132,7 @@ class AboutMovieViewModel : ViewModel()
                 Log.e("fetchCastDetails", "Error: ${e.message}")
             }
         }
+        onComplete()
     }
 
     private suspend fun fetchCastDetailsFromApi(id: Int): String {
@@ -152,8 +154,8 @@ class AboutMovieViewModel : ViewModel()
     }
 
     // Fetch all movie details
-    fun fetchAllMovieDetails(id: Int) {
-        viewModelScope.launch {
+    suspend fun fetchAllMovieDetails(id: Int,onComplete: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = fetchAllMovieDetailsFromApi(id)
                 Log.d("AboutMovieViewModel", "API Response: $response")
@@ -170,6 +172,7 @@ class AboutMovieViewModel : ViewModel()
                 Log.e("fetchAllMovieDetails", "Error: ${e.message}")
             }
         }
+        onComplete()
     }
 
     private suspend fun fetchAllMovieDetailsFromApi(id: Int): String {
@@ -190,8 +193,8 @@ class AboutMovieViewModel : ViewModel()
         }
     }
 
-    fun fetchyoutubetrailerid(id: Int){
-        viewModelScope.launch {
+    suspend fun fetchyoutubetrailerid(id: Int){
+        viewModelScope.launch(Dispatchers.IO) {
             try{
                 val response= fetchYoutubeTrailer(id)
                 val aboutyoutubedata= Gson().fromJson(response,Trailer::class.java)

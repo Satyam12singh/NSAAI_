@@ -57,8 +57,9 @@ import com.example.nsaai.R
 import com.example.nsaai.TopBar.TopBarMovie
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-
+import kotlinx.coroutines.launch
 
 
 //@Composable
@@ -287,6 +288,7 @@ fun WatchListMovie(
         checkInternetConnectivity(context)
         fetchMovieIds()
     }
+    val isLoading = remember { mutableStateOf(true) }
 
 
     // Fetch details for each movie
@@ -296,7 +298,9 @@ fun WatchListMovie(
                 viewModel.fetchExternalIds(movieId.toInt())
                 delay(1500)
                 val externalId = viewModel.externalId.value
-                viewmodel.fetchAboutTheMovie(externalId)
+                viewmodel.fetchAboutTheMovie(externalId){
+                    isLoading=false
+                }
                 delay(1500)
 
                 val movieInfo = MovieInfo(
@@ -308,6 +312,36 @@ fun WatchListMovie(
             }
         }
     }
+//    LaunchedEffect(movieIds.value) {
+//        coroutineScope { // Use coroutineScope to launch coroutines within the LaunchedEffect
+//            movieIds.value.forEach { movieId ->
+//                if (!movieDetailsMap.containsKey(movieId)) {
+//                    launch { // Launch a new coroutine for each movie ID
+//                        try {
+//                            val success = viewModel.fetchExternalIds(movieId.toInt())
+//                            if (success) {
+//                                val success2 = viewmodel.fetchAboutTheMovie(viewModel.externalId.value)
+//                                if (success2) {
+//                                    val movieInfo = MovieInfo(
+//                                        id = movieId,
+//                                        posterPath = viewmodel.imageofmovie.value,
+//                                        title = viewmodel.title.value
+//                                    )
+//                                    movieDetailsMap[movieId] = movieInfo
+//                                } else {
+//                                    Log.e("fetchAboutTheMovie", "Failed for movie $movieId")
+//                                }
+//                            } else {
+//                                Log.e("fetchExternalIds", "Failed for movie $movieId")
+//                            }
+//                        } catch (e: Exception) { // Handle exceptions within the coroutine
+//                            Log.e("LaunchedEffect", "Error processing movie $movieId: ${e.message}")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     if (isLoading) {
         Box(
