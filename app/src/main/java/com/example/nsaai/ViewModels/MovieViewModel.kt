@@ -13,6 +13,7 @@ import com.example.nsaai.datafromapi.MovieData
 import com.example.nsaai.datafromapi.MovieResult
 
 import com.google.gson.Gson
+import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,15 +57,17 @@ class MovieViewModel : ViewModel() {
 
     // Automatically fetch movies when the ViewModel initializes
     init {
-        fetchMovies()
-        fetchTrendingMovies()
-        fetchPopularMovies()
-        fetchUpcomingMovie()
+        viewModelScope.launch {
+            fetchMovies()
+            fetchTrendingMovies()
+            fetchPopularMovies()
+            fetchUpcomingMovie()
+        }
     }
 
 
 
-    fun fetchUpcomingMovie() {
+    suspend fun fetchUpcomingMovie() {
         viewModelScope.launch {
             try {
                 for (page in 1..15) {
@@ -108,7 +111,7 @@ class MovieViewModel : ViewModel() {
 
 
 
-    fun fetchTrendingMovies() {
+    suspend fun fetchTrendingMovies() {
         viewModelScope.launch {
             try {
 
@@ -152,7 +155,7 @@ class MovieViewModel : ViewModel() {
 
     }
 
-    fun fetchPopularMovies() {
+    suspend fun fetchPopularMovies() {
         viewModelScope.launch {
             try{
 
@@ -199,8 +202,8 @@ class MovieViewModel : ViewModel() {
 
 
 
-    fun fetchMovies() {
-        viewModelScope.launch {
+    suspend fun fetchMovies() {
+//        viewModelScope.launch {
             try {
                 val allMovies = mutableListOf<MovieResult>()
                 for (page in 1..20) { // Fetch all 10 pages
@@ -219,7 +222,7 @@ class MovieViewModel : ViewModel() {
                     error = e.message
                 )
             }
-        }
+//        }
     }
 
     private suspend fun fetchAllMovies(page: Int): String {
@@ -259,7 +262,7 @@ class MovieViewModel : ViewModel() {
 
 
 
-    fun fetchExternalIds(movieid: Int) {
+    suspend fun fetchExternalIds(movieid: Int) {
         viewModelScope.launch {
             try {
                 val response = findexternalids(movieid)

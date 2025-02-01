@@ -101,7 +101,10 @@ fun AboutMovie(modifier: Modifier = Modifier,
 //    }
 
     Log.d("AM id passed", "$id")
-    viewModel.fetchExternalIds(id)
+    LaunchedEffect(key1 = id) {
+        viewModel.fetchExternalIds(id)
+    }
+
 
     val externalid_fetched = viewModel.externalId.value
     Log.d("AM externalid fetched", "$externalid_fetched")

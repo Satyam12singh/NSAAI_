@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,7 +62,6 @@ import com.example.nsaai.ViewModels.MovieViewModel
 import com.example.nsaai.datafromapi.MovieResult  // Ensure this import is correct
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.min
@@ -75,23 +75,39 @@ fun MovieScreen(
     viewModel: MovieViewModel, modifier: Modifier = Modifier, navController: NavController,
     viewmodel: GenreViewModel
 ) {
-//    LaunchedEffect (Unit){
-//        viewmodel.fetchGenre()
-//        viewModel.fetchMovies()
-//    }
+
     val state = viewModel.moviestate.value
     val genreState = viewmodel.genrestate.value
     val scrollState = rememberScrollState()
     var fontifoverflow = 14.sp
     val context= LocalContext.current
 
+    var forceUpdate by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state, genreState, forceUpdate) {
+        viewmodel.fetchGenre()
+        viewModel.fetchMovies()
+    }
+    LaunchedEffect(checkSlowInternet(context)) {
+        viewmodel.fetchGenre()
+        viewModel.fetchMovies()
+    }
+
+//    var forceUpdate by remember { mutableStateOf(false) }
+    val isConnected = rememberConnectivityState()
+    LaunchedEffect(isConnected) {
+        if (isConnected) {
+            viewmodel.fetchGenre()
+            viewModel.fetchMovies()
+            forceUpdate = !forceUpdate
+        }
+    }
 
 
-    var isRefreshing by remember { mutableStateOf(false) }
-    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefreshing)
 
 
-    val coroutineScope = rememberCoroutineScope()
+
+//    val coroutineScope = rememberCoroutineScope()
 
     if(checkInternetConnectivity(context)){
         if (!checkSlowInternet(context)){
@@ -101,30 +117,31 @@ fun MovieScreen(
                 }
             ) { paddingValues ->
 
-                SwipeRefresh(
-                    state = swipeRefreshState,
+                var isRefreshing by remember { mutableStateOf(false) }
+                val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
-                    onRefresh = {
-                        coroutineScope.launch {
-                            isRefreshing=true
+                LaunchedEffect(isRefreshing) {
+                    if (isRefreshing) {
+                        try {
                             viewmodel.fetchGenre()
                             viewModel.fetchMovies()
-                            delay(3.seconds)
-                            isRefreshing=false
-
+                        } catch (e: Exception) {
+                            Log.e("RefreshError", "Error fetching data", e)
+                        } finally {
+                            isRefreshing = false
                         }
-
                     }
+                }
+
+                SwipeRefresh (
+                    state = swipeRefreshState,
+                    onRefresh = { isRefreshing = true },
+                    modifier = Modifier.padding(paddingValues)
                 ) {
-//            val minScrollThreshold = 200 // You can adjust this threshold as per your requirement
 //
-//            val isBelowThreshold = remember { derivedStateOf {
-//                scrollState.firstVisibleItemScrollOffset < minScrollThreshold
-//            }}
 
                     Column(
                         modifier = Modifier
-                            .padding(paddingValues)
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -137,7 +154,7 @@ fun MovieScreen(
                         } else {
 
 
-                            LazyColumn {  // Fixed the nesting issue here
+                            LazyColumn(modifier=Modifier.fillMaxSize()) {  // Fixed the nesting issue here
                                 items(genreState.list) { genre ->
                                     val filteredMovie = state.list.filter { movie: MovieResult ->
                                         genre.id in movie.genre_ids
@@ -240,14 +257,12 @@ fun MovieScreen(
                                                                 onTextLayout = { textLayoutResult ->
                                                                     if (textLayoutResult.hasVisualOverflow) {
                                                                         fontSize =
-                                                                            10.sp // Reduce font size when there's overflow
+                                                                            10.sp
                                                                     }
                                                                 },
                                                                 fontWeight = FontWeight.Bold,
                                                                 fontFamily = Font(R.font.poppins).toFontFamily(),
                                                                 color = MaterialTheme.colorScheme.onBackground,
-
-//                                                        modifier=Modifier.padding(bottom = 2.dp)
                                                             )
 
                                                         }
@@ -256,7 +271,6 @@ fun MovieScreen(
 
 
                                                 }
-//                                    }
 
                                             }
                                         }
@@ -276,59 +290,127 @@ fun MovieScreen(
                     TopBarMovie(navController = navController,name="Movies")
                 }
             ){PaddingValues->
-                Column(
-                    modifier=Modifier.fillMaxSize().padding(PaddingValues)
-                        .background(MaterialTheme.colorScheme.background.copy(0.5f)),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        Icons.Rounded.NetworkCheck, contentDescription = "Slow Internet Connection",
-                        modifier= Modifier.background(MaterialTheme.colorScheme.onBackground))
-                    androidx.compose.material.Text(
-                        "Slow Internet Connection",
-                        fontFamily = Font(R.font.font).toFontFamily(),
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold
-                    )
+
+                var isRefreshing by remember { mutableStateOf(false) }
+                val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+
+                LaunchedEffect(isRefreshing) {
+                    if (isRefreshing) {
+                        try {
+                            if(checkInternetConnectivity(context)){
+                            viewmodel.fetchGenre()
+                            viewModel.fetchMovies()
+                                }
+                        } catch (e: Exception) {
+                            Log.e("RefreshError", "Error fetching data", e)
+                        } finally {
+                            isRefreshing = false
+                        }
+                    }
                 }
+
+                SwipeRefresh (
+                    state = swipeRefreshState,
+                    onRefresh = { isRefreshing = true },
+                    modifier = Modifier.padding(PaddingValues)
+                ){
+                    Column(
+                        modifier=Modifier.fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background.copy(0.5f)),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(
+                            Icons.Rounded.NetworkCheck, contentDescription = "Slow Internet Connection",
+                            modifier= Modifier.background(MaterialTheme.colorScheme.onBackground))
+                        androidx.compose.material.Text(
+                            "Slow Internet Connection",
+                            fontFamily = Font(R.font.font).toFontFamily(),
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+
             }
 
         }
 
     }
-    else{
+    else {
         Scaffold(
             topBar = {
-                TopBarMovie(navController = navController,name="Movies")
+                TopBarMovie(navController = navController, name = "Movies")
             }
-        ){PaddingValues->
-            Column(
-                modifier=Modifier.fillMaxSize().padding(PaddingValues)
-                    .background(MaterialTheme.colorScheme.background.copy(0.5f)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+        ) { paddingValues ->
+            var isRefreshing by remember { mutableStateOf(false) }
+            val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+
+            LaunchedEffect(isRefreshing) {
+                if (isRefreshing) {
+                    try {
+                        // Check if internet is now available
+                        if (checkInternetConnectivity(context)) {
+                            viewmodel.fetchGenre()
+                            viewModel.fetchMovies()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("RefreshError", "Error fetching data", e)
+                    } finally {
+                        isRefreshing = false
+                    }
+                }
+            }
+
+            SwipeRefresh(
+                state = swipeRefreshState,
+                onRefresh = { isRefreshing = true },
+                modifier = Modifier.padding(paddingValues)
             ) {
-                Image(
-                    Icons.Rounded.NetworkCheck, contentDescription = "No Internet Connection",
-                    modifier= Modifier.background(MaterialTheme.colorScheme.onBackground))
-                androidx.compose.material.Text(
-                    "No Internet Connection",
-                    fontFamily = Font(R.font.font).toFontFamily(),
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold
-                )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(paddingValues)
+                                .background(MaterialTheme.colorScheme.background.copy(0.5f)),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                Icons.Rounded.NetworkCheck,
+                                contentDescription = "No Internet Connection",
+                                modifier = Modifier.background(MaterialTheme.colorScheme.onBackground)
+                            )
+                            Text(
+                                "No Internet Connection",
+                                fontFamily = Font(R.font.font).toFontFamily(),
+                                fontSize = 24.sp,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Pull to refresh",
+                                modifier = Modifier.padding(top = 10.dp),
+                                fontFamily = Font(R.font.font).toFontFamily(),
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                }
             }
         }
-
     }
 
 }
 
 
-//This function is too much important
+
 @Composable
 fun calculateScale(index: Int, listState: androidx.compose.foundation.lazy.LazyListState): Float {
     // Get the visible items and the center of the viewport
@@ -357,8 +439,29 @@ fun checkSlowInternet(context:Context):Boolean {
     val network = connectivityManager.activeNetwork
     val capabilities = connectivityManager.getNetworkCapabilities(network)
 
-    val isSlowConnection = capabilities?.linkDownstreamBandwidthKbps ?: 0 < 1000 // Example threshold: 1 Mbps
+    return (capabilities?.linkDownstreamBandwidthKbps ?: 0) < 1000 // Example threshold: 1 Mbps
 
-    if (isSlowConnection) return true else return false
+}
+
+@Composable
+fun rememberConnectivityState(): Boolean {
+    val context = LocalContext.current
+    val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+    val isConnected = remember { mutableStateOf(checkInternetConnectivity(context)) }
+
+    LaunchedEffect(Unit) {
+        val networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: android.net.Network) {
+                isConnected.value = true
+            }
+
+            override fun onLost(network: android.net.Network) {
+                isConnected.value = false
+            }
+        }
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
+    }
+
+    return isConnected.value
 }
 

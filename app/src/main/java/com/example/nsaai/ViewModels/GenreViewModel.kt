@@ -21,11 +21,14 @@ class GenreViewModel : ViewModel() {
     private val _genreState = mutableStateOf(GenreState())
     val genrestate: State<GenreState> = _genreState
     init {
-        fetchGenre()
+        viewModelScope.launch {
+            fetchGenre()
+        }
+
     }
 
-    fun fetchGenre() {
-        viewModelScope.launch {
+    suspend fun fetchGenre() {
+//        viewModelScope.launch {
             try {
                 val response = fetchGenreofMovies()
                 val genreData = Gson().fromJson(response, GenreData::class.java)
@@ -40,7 +43,7 @@ class GenreViewModel : ViewModel() {
                     error = e.message
                 )
             }
-        }
+//        }
     }
 
     private suspend fun fetchGenreofMovies(): String {

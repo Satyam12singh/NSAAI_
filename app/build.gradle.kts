@@ -64,6 +64,9 @@ android {
 
 dependencies {
 
+//    swiperefresh
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.31.3-beta")
+
     // Hilt Core
     implementation("com.google.dagger:hilt-android:2.48")
     implementation(libs.firebase.database)
